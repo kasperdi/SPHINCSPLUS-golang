@@ -2,10 +2,10 @@ package main
 
 import (
 	"fmt"
-	"./WOTSplus"
+	"./util"
 )
 
 func main() {
 	fmt.Println("PLACEHOLDER")
-	fmt.Println(wots_PKgen())
+	fmt.Println(util.ToByte(12412, 64))
 }
