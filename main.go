@@ -7,5 +7,5 @@ import (
 
 func main() {
 	fmt.Println("PLACEHOLDER")
-	fmt.Println(util.ToByte(12412, 64))
+	fmt.Println(util.ToByte(0, 64))
 }
