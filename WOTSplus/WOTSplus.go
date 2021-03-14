@@ -6,9 +6,9 @@ import "math/big"
 const ( 
 	n = 32
 	w = 4
-	//len1 kan findes ved: math.Ceil(8*n/math.Log2(w))
-	//len2 kan findes ved: math.Floor(math.Log2(math.Ceil(8*n/math.Log2(w-1)))/math.Log2(w))+1
-	//len kan findes ved: len1 + len2
+	// len1 kan findes ved: math.Ceil(8*n/math.Log2(w))
+	// len2 kan findes ved: math.Floor(math.Log2(math.Ceil(8*n/math.Log2(w-1)))/math.Log2(w))+1
+	// len kan findes ved: len1 + len2
 )
 
 type ADRS struct {
