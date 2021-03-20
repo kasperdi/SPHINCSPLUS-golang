@@ -1,6 +1,7 @@
 package WOTSplus
 //import "math"
 import "math/big"
+import "../tweakable"
 	
 // Parameters for WOTS+
 const ( 
@@ -11,17 +12,6 @@ const (
 	// len kan findes ved: len1 + len2
 )
 
-type ADRS struct {
-    LayerAddress [4]byte
-	TreeAddress [12]byte
-	Type int32
-	KeyPairAddress [4]byte
-	TreeHeight int32
-	TreeIndex int32
-	ChainAddress [4]byte
-	HashAddress int32
-}
-
 // Setter method for ADRS
 func (address *ADRS) setHashAddress(newAddress int32) {
 	address.HashAddress = newAddress
@@ -29,15 +19,17 @@ func (address *ADRS) setHashAddress(newAddress int32) {
 
 // Calculates the value of F iterated s times on X
 func chain(X []byte, startIndex int, steps int, PKseed *big.Int, address *ADRS) []byte { //Replace ADRS with struct maybe
-	if(x == 0) {
+	if(steps == 0) {
 		return X
 	}
-	if((i+s) > (w-1)) {
+	if((startIndex + steps) > (w-1)) {
 		return nil
 	}
-	tmp [n]byte = chain(X, i, s - 1, PKseed, address)
 
-	address.setHashAddress(i + s - 1)
+	var tmp [n]byte // Change to use := ?
+	tmp = chain(X, startIndex, steps - 1, PKseed, address)
+
+	address.setHashAddress(startIndex + steps - 1)
 	tmp = F(PKseed, address, tmp)
 	return tmp
 }
