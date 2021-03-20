@@ -4,6 +4,7 @@ import "crypto/sha256"
 import "../util"
 import "math/big"
 import "../address"
+import "fmt"
 
 type sha256Tweak struct {
     
