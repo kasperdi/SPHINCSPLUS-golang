@@ -4,97 +4,95 @@ import (
     "crypto/sha256"
     "crypto/hmac"
     "encoding/binary"
-    "math/big"
     "../util"
     "../address"
     "../parameters"
 )
 
-type sha256Tweak struct {
+type Sha256Tweak struct {
     
 }
 
 // Tweakable hash function Hmsg
-func (h *sha256Tweak) Hmsg(R []byte, PKseed *big.Int, PKroot *big.Int, M []byte) []byte {
-    concatenatedParams := append(append(append(R, PKseed.Bytes()...), PKroot.Bytes()...), M...)
+func (h *Sha256Tweak) Hmsg(R []byte, PKseed []byte, PKroot []byte, M []byte) []byte {
+    concatenatedParams := append(append(append(R, PKseed...), PKroot...), M...)
     hashedConc := hashMessage(concatenatedParams)
     bitmask := mgf1sha256(hashedConc, 32)
     return bitmask
 }
 
 // Tweakable hash function PRF
-func (h *sha256Tweak) PRF(SEED *big.Int, adrs *address.ADRS) []byte {
-    SEEDBytes := SEED.Bytes()
+func (h *Sha256Tweak) PRF(SEED []byte, adrs *address.ADRS) []byte {
     compressedADRS := compressADRS(adrs)
-    concatenatedSEEDADRSc := append(SEEDBytes, compressedADRS...)
+    concatenatedSEEDADRSc := append(SEED, compressedADRS...)
     return hashMessage(concatenatedSEEDADRSc)
 }
 
 // Tweakable hash function PRFmsg
-func (h *sha256Tweak) PRFmsg(SKprf *big.Int, OptRand *big.Int, M []byte) []byte {
-    OptMConcatenated := append(OptRand.Bytes(), M...)
-    mac := hmac.New(sha256.New, SKprf.Bytes())
+func (h *Sha256Tweak) PRFmsg(SKprf []byte, OptRand []byte, M []byte) []byte {
+    OptMConcatenated := append(OptRand, M...)
+    mac := hmac.New(sha256.New, SKprf)
     mac.Write(OptMConcatenated)
     return mac.Sum(nil)
 }
 
 // Tweakable hash function F
-func (h *sha256Tweak) F(variant string, PKseed *big.Int, adrs *address.ADRS, tmp []byte) []byte {
+func (h *Sha256Tweak) F(variant string, PKseed []byte, adrs *address.ADRS, tmp []byte) []byte {
     M1 := make([]byte, len(tmp))
     compressedADRS := compressADRS(adrs)
 
-    if variant == robust {
-        bitmask := mgf1sha256(append(PKseed.Bytes(), compressedADRS...), len(tmp))
+    if variant == Robust {
+        bitmask := mgf1sha256(append(PKseed, compressedADRS...), len(tmp))
         M1 = xorBytes(tmp, bitmask) 
-    } else if variant == simple {
+    } else if variant == Simple {
         M1 = tmp
     }
 
     bytes := util.ToByte(0,64-parameters.N)
-    concatenatedParams := append(append(append(PKseed.Bytes(), bytes...), compressedADRS...), M1...)
+    concatenatedParams := append(append(append(PKseed, bytes...), compressedADRS...), M1...)
     
     return hashMessage(concatenatedParams)
 }
 
 // Tweakable hash function H
-func (h *sha256Tweak) H(variant string, PKseed *big.Int, adrs *address.ADRS, tmp1 []byte, tmp2 []byte) []byte {
+func (h *Sha256Tweak) H(variant string, PKseed []byte, adrs *address.ADRS, tmp1 []byte, tmp2 []byte) []byte {
     M1M2 := make([]byte, len(tmp1)+len(tmp2))
     compressedADRS := compressADRS(adrs)
 
-    if variant == robust {
-        bitmaskM1 := mgf1sha256(append(PKseed.Bytes(), compressedADRS...), len(tmp1))
+    if variant == Robust {
+        bitmaskM1 := mgf1sha256(append(PKseed, compressedADRS...), len(tmp1))
         M1 := make([]byte, len(tmp1))
         M1 = xorBytes(tmp1, bitmaskM1)
 
-        bitmaskM2 := mgf1sha256(append(PKseed.Bytes(), compressedADRS...), len(tmp2))
+        bitmaskM2 := mgf1sha256(append(PKseed, compressedADRS...), len(tmp2))
         M2 := make([]byte, len(tmp2))
         M2 = xorBytes(tmp2, bitmaskM2)
 
         M1M2 = append(M1, M2...)
-    } else if variant == simple {
+    } else if variant == Simple {
         M1M2 = append(tmp1, tmp2...)
     }
 
     bytes := util.ToByte(0,64-parameters.N)
-    concatenatedParams := append(append(append(PKseed.Bytes(), bytes...), compressedADRS...), M1M2...)
+    concatenatedParams := append(append(append(PKseed, bytes...), compressedADRS...), M1M2...)
     
     return hashMessage(concatenatedParams)
 }
 
 // Tweakable hash function T_l
-func (h *sha256Tweak) T_l(variant string, PKseed *big.Int, adrs *address.ADRS, tmp []byte) []byte {
+func (h *Sha256Tweak) T_l(variant string, PKseed []byte, adrs *address.ADRS, tmp []byte) []byte {
     M := make([]byte, len(tmp))
     compressedADRS := compressADRS(adrs)
 
-    if variant == robust {
-        bitmask := mgf1sha256(append(PKseed.Bytes(), compressedADRS...), len(tmp))
+    if variant == Robust {
+        bitmask := mgf1sha256(append(PKseed, compressedADRS...), len(tmp))
         M = xorBytes(tmp, bitmask) 
-    } else if variant == simple {
+    } else if variant == Simple {
         M = tmp
     }
 
     bytes := util.ToByte(0,64-parameters.N)
-    concatenatedParams := append(append(append(PKseed.Bytes(), bytes...), compressedADRS...), M...)
+    concatenatedParams := append(append(append(PKseed, bytes...), compressedADRS...), M...)
     
     return hashMessage(concatenatedParams)
 }
