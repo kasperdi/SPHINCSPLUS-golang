@@ -1,12 +1,10 @@
 package WOTSplus
 
 import (
-	"math/big"
-	"reflect"
 	"testing"
 )
 
-// Template for test
+/* // Template for test
 func TestSignAndVerify(t *testing.T) {
 	for i := 1; i < 100; i++ {
 		PK = Wots_PKgen()
@@ -18,4 +16,4 @@ func TestSignAndVerify(t *testing.T) {
 	}
 	
 
-}
+} */

@@ -1,7 +1,8 @@
 package WOTSplus
 //import "math"
 import "math/big"
-import "../tweakable"
+/* import "../tweakable" */
+import "../address"
 	
 // Parameters for WOTS+
 const ( 
@@ -18,7 +19,7 @@ func (address *ADRS) setHashAddress(newAddress int32) {
 }
 
 // Calculates the value of F iterated s times on X
-func chain(X []byte, startIndex int, steps int, PKseed *big.Int, address *ADRS) []byte { //Replace ADRS with struct maybe
+func chain(X []byte, startIndex int, steps int, PKseed *big.Int, adrs *address.ADRS) []byte { //Replace ADRS with struct maybe
 	if(steps == 0) {
 		return X
 	}
@@ -27,25 +28,25 @@ func chain(X []byte, startIndex int, steps int, PKseed *big.Int, address *ADRS) 
 	}
 
 	var tmp [n]byte // Change to use := ?
-	tmp = chain(X, startIndex, steps - 1, PKseed, address)
+	tmp = chain(X, startIndex, steps - 1, PKseed, adrs)
 
-	address.setHashAddress(startIndex + steps - 1)
+	adrs.setHashAddress(startIndex + steps - 1)
 	tmp = F(PKseed, address, tmp)
 	return tmp
 }
 
-func Wots_SKgen(SKseed int, address *ADRS) []byte {
+func Wots_SKgen(SKseed int, adrs *address.ADRS) []byte {
 	return nil
 }
 
-func Wots_PKgen(SKseed int, PKseed int, address *ADRS) []byte {
+func Wots_PKgen(SKseed int, PKseed int, adrs *address.ADRS) []byte {
 	return nil
 }
 
-func Wots_sign(message []byte, SKseed int, PKseed int, address *ADRS) []byte {
+func Wots_sign(message []byte, SKseed int, PKseed int, adrs *address.ADRS) []byte {
 	return nil
 }
 
-func Wots_pkFromSig(signature []byte, message []byte, PKseed int, address *ADRS) []byte {
+func Wots_pkFromSig(signature []byte, message []byte, PKseed int, adrs *address.ADRS) []byte {
 	return nil
 }

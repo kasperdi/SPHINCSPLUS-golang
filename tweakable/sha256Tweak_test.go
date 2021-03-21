@@ -3,8 +3,6 @@ package tweakable
 import (
 	"testing"
 	"encoding/hex"
-	"../address"
-	"fmt"
 )
 
 // Test of MGF1-SHA256
