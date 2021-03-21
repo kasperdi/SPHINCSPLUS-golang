@@ -3,15 +3,7 @@ package WOTSplus
 import "math/big"
 /* import "../tweakable" */
 import "../address"
-	
-// Parameters for WOTS+
-const ( 
-	n = 32
-	w = 4
-	// len1 kan findes ved: math.Ceil(8*n/math.Log2(w))
-	// len2 kan findes ved: math.Floor(math.Log2(math.Ceil(8*n/math.Log2(w-1)))/math.Log2(w))+1
-	// len kan findes ved: len1 + len2
-)
+import "../parameters"
 
 // Setter method for ADRS
 func (address *ADRS) setHashAddress(newAddress int32) {
@@ -23,7 +15,7 @@ func chain(X []byte, startIndex int, steps int, PKseed *big.Int, adrs *address.A
 	if(steps == 0) {
 		return X
 	}
-	if((startIndex + steps) > (w-1)) {
+	if((startIndex + steps) > (parameters.W-1)) {
 		return nil
 	}
 

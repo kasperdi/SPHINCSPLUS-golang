@@ -11,4 +11,5 @@ func main() {
 	test := "abcd21412"
 	fmt.Println(test[0:4])
 	fmt.Println(3&2)
+	fmt.Println(3 << 2)
 }

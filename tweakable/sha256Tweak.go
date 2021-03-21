@@ -1,18 +1,28 @@
 package tweakable
 
-import "crypto/sha256"
-import "../util"
-import "math/big"
-import "../address"
+import (
+    "crypto/sha256"
+    "crypto/hmac"
+    "encoding/binary"
+    "math/big"
+    "../util"
+    "../address"
+    "../parameters"
+)
 
 type sha256Tweak struct {
     
 }
 
-func (h *sha256Tweak) Hmsg(R []byte, PKseed *big.Int, PKroot, M []byte) []byte {
-    return nil
+// Tweakable hash function Hmsg
+func (h *sha256Tweak) Hmsg(R []byte, PKseed *big.Int, PKroot *big.Int, M []byte) []byte {
+    concatenatedParams := append(append(append(R, PKseed.Bytes()...), PKroot.Bytes()...), M...)
+    hashedConc := hashMessage(concatenatedParams)
+    bitmask := mgf1sha256(hashedConc, 32)
+    return bitmask
 }
 
+// Tweakable hash function PRF
 func (h *sha256Tweak) PRF(SEED *big.Int, adrs *address.ADRS) []byte {
     SEEDBytes := SEED.Bytes()
     compressedADRS := compressADRS(adrs)
@@ -20,22 +30,76 @@ func (h *sha256Tweak) PRF(SEED *big.Int, adrs *address.ADRS) []byte {
     return hashMessage(concatenatedSEEDADRSc)
 }
 
+// Tweakable hash function PRFmsg
 func (h *sha256Tweak) PRFmsg(SKprf *big.Int, OptRand *big.Int, M []byte) []byte {
-    return nil
+    OptMConcatenated := append(OptRand.Bytes(), M...)
+    mac := hmac.New(sha256.New, SKprf.Bytes())
+    mac.Write(OptMConcatenated)
+    return mac.Sum(nil)
 }
 
+// Tweakable hash function F
 func (h *sha256Tweak) F(variant string, PKseed *big.Int, adrs *address.ADRS, tmp []byte) []byte {
-    return nil
+    M1 := make([]byte, len(tmp))
+    compressedADRS := compressADRS(adrs)
+
+    if variant == robust {
+        bitmask := mgf1sha256(append(PKseed.Bytes(), compressedADRS...), len(tmp))
+        M1 = xorBytes(tmp, bitmask) 
+    } else if variant == simple {
+        M1 = tmp
+    }
+
+    bytes := util.ToByte(0,64-parameters.N)
+    concatenatedParams := append(append(append(PKseed.Bytes(), bytes...), compressedADRS...), M1...)
+    
+    return hashMessage(concatenatedParams)
 }
 
-func (h *sha256Tweak) H(variant string, PKseed *big.Int, adrs *address.ADRS, tmp []byte) []byte {
-    return nil
+// Tweakable hash function H
+func (h *sha256Tweak) H(variant string, PKseed *big.Int, adrs *address.ADRS, tmp1 []byte, tmp2 []byte) []byte {
+    M1M2 := make([]byte, len(tmp1)+len(tmp2))
+    compressedADRS := compressADRS(adrs)
+
+    if variant == robust {
+        bitmaskM1 := mgf1sha256(append(PKseed.Bytes(), compressedADRS...), len(tmp1))
+        M1 := make([]byte, len(tmp1))
+        M1 = xorBytes(tmp1, bitmaskM1)
+
+        bitmaskM2 := mgf1sha256(append(PKseed.Bytes(), compressedADRS...), len(tmp2))
+        M2 := make([]byte, len(tmp2))
+        M2 = xorBytes(tmp2, bitmaskM2)
+
+        M1M2 = append(M1, M2...)
+    } else if variant == simple {
+        M1M2 = append(tmp1, tmp2...)
+    }
+
+    bytes := util.ToByte(0,64-parameters.N)
+    concatenatedParams := append(append(append(PKseed.Bytes(), bytes...), compressedADRS...), M1M2...)
+    
+    return hashMessage(concatenatedParams)
 }
 
+// Tweakable hash function T_l
 func (h *sha256Tweak) T_l(variant string, PKseed *big.Int, adrs *address.ADRS, tmp []byte) []byte {
-    return nil
+    M := make([]byte, len(tmp))
+    compressedADRS := compressADRS(adrs)
+
+    if variant == robust {
+        bitmask := mgf1sha256(append(PKseed.Bytes(), compressedADRS...), len(tmp))
+        M = xorBytes(tmp, bitmask) 
+    } else if variant == simple {
+        M = tmp
+    }
+
+    bytes := util.ToByte(0,64-parameters.N)
+    concatenatedParams := append(append(append(PKseed.Bytes(), bytes...), compressedADRS...), M...)
+    
+    return hashMessage(concatenatedParams)
 }
 
+// Hashes a message using SHA-256
 func hashMessage(message []byte) []byte {
     hash := sha256.New()
     hash.Write(message)
@@ -54,23 +118,33 @@ type ADRS struct {
 	HashAddress int32
 }
  */
+
+ // Compresses ADRS into 22 bytes
 func compressADRS(adrs *address.ADRS) []byte {
-    ADRSc := make([]byte, 22)
-    
-    // Extract least significant byte of layer address
-    copy(adrs.LayerAddress[0:1], ADRSc[0:1])
-    // Extract least significant 8 bytes of tree address
-    copy(adrs.TreeAddress[0:8], ADRSc[1:9])
-    // Extract least significant byte of type field
-    copy(util.ToByte(uint32(adrs.Type), 4)[0:1], ADRSc[9:10]) //TODO: LITTLE ENDIAN OR BIG ENDIAN???
+    ADRSc := make([]byte, 0)
 
-    // Copy rest of ADRS
-    copy(adrs.KeyPairAddress[:], ADRSc[10:14])
-    // copy(ADRS.TreeHeight, ADRSc[15:19]) TODO: SKAL DE HER IKKE MED?
-    // copy(ADRS.TreeIndex, ADRSc[19:23]) TODO: SKAL DE HER IKKE MED?
-    copy(adrs.ChainAddress[:], ADRSc[14:18])
+    typ := binary.BigEndian.Uint32(adrs.Type[:])
 
-    copy(util.ToByte(uint32(adrs.HashAddress), 4), ADRSc[18:22])
+    ADRSc = append(ADRSc, adrs.LayerAddress[3:4]...)
+    ADRSc = append(ADRSc, adrs.TreeAddress[4:12]...)
+    ADRSc = append(ADRSc, adrs.Type[3:4]...)
+
+    switch typ {
+    case 0:
+        ADRSc = append(ADRSc, adrs.KeyPairAddress[:]...)
+        ADRSc = append(ADRSc, adrs.ChainAddress[:]...)
+        ADRSc = append(ADRSc, adrs.HashAddress[:]...)
+    case 1:
+        ADRSc = append(ADRSc, adrs.KeyPairAddress[:]...)
+        ADRSc = append(ADRSc, util.ToByte(0, 4)...)
+        ADRSc = append(ADRSc, util.ToByte(0, 4)...)
+    case 2:
+
+    case 3:
+
+    case 4:
+
+    }
 
     return ADRSc
 }
@@ -87,4 +161,13 @@ func mgf1sha256(seed []byte, length int) []byte {
 	}
     // Extract the leading l octets of T as the octet string mask.
     return T[:length]
+}
+
+// Returns a XOR b, where a and b has to have same length
+func xorBytes(a []byte, b []byte) []byte {
+    res := make([]byte, len(a))
+    for i, elem := range a {
+        res[i] = elem ^ b[i]
+    }
+    return res
 }

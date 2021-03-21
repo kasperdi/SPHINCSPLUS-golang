@@ -3,10 +3,10 @@ package address
 type ADRS struct {
     LayerAddress [4]byte
 	TreeAddress [12]byte
-	Type int32
+	Type [4]byte
 	KeyPairAddress [4]byte
-	TreeHeight int32
-	TreeIndex int32
+	TreeHeight [4]byte
+	TreeIndex [4]byte
 	ChainAddress [4]byte
-	HashAddress int32
+	HashAddress [4]byte
 }
