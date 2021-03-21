@@ -80,7 +80,7 @@ func (h *Sha256Tweak) H(variant string, PKseed []byte, adrs *address.ADRS, tmp1 
 }
 
 // Tweakable hash function T_l
-func (h *Sha256Tweak) T_l(variant string, PKseed []byte, adrs *address.ADRS, tmp []byte) []byte {
+func (h *Sha256Tweak) T_l(variant string, PKseed []byte, adrs *address.ADRS  , tmp []byte) []byte {
     M := make([]byte, len(tmp))
     compressedADRS := compressADRS(adrs)
 

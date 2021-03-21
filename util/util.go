@@ -5,10 +5,24 @@ import "math"
 
 // For x and y non-negative intergers, toByte(x,y) returns the y-byte bytearray 
 // containing the binary representation of x in big-endian byte-order.
-func ToByte(x uint32, y uint) []byte {
+func ToByte2(x uint32, y uint) []byte {
 	buffer := make([]byte, y)
 	binary.BigEndian.PutUint32(buffer, x)
 	return buffer
+}
+
+func ToByte(x uint32, y uint) []byte {
+	result := make([]byte, 4)
+	result[0] = byte(x >> 24)
+	result[1] = byte(x >> 16)
+	result[2] = byte(x >> 8)
+	result[3] = byte(x)
+
+	fin := make([]byte, y)
+
+	copy(fin, result)
+
+	return fin
 }
 
 func Base_w(X []byte, w int, out_len int) []int {

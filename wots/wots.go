@@ -2,7 +2,6 @@ package WOTSplus
 
 import (
 	"math"
-	"fmt"
 	"../tweakable"
 	"../address"
 	"../parameters"
@@ -59,7 +58,17 @@ func Wots_PKgen(SKseed []byte, PKseed []byte, adrs *address.ADRS) []byte {
 	len2 := int(math.Floor(math.Log2(math.Ceil(8*parameters.N/math.Log2(parameters.W-1)))/math.Log2(parameters.W))+1)
 	len := len1 + len2
 
-	wotspkADRS := adrs // Make a copy of adrs
+	//wotspkADRS := adrs // Make a copy of adrs
+	wotspkADRS := new(address.ADRS)
+	wotspkADRS.LayerAddress = adrs.LayerAddress
+	wotspkADRS.TreeAddress = adrs.TreeAddress
+	wotspkADRS.Type = adrs.Type
+	wotspkADRS.KeyPairAddress = adrs.KeyPairAddress
+	wotspkADRS.TreeHeight = adrs.TreeHeight
+	wotspkADRS.TreeIndex = adrs.TreeIndex
+	wotspkADRS.ChainAddress = adrs.ChainAddress
+	wotspkADRS.HashAddress = adrs.HashAddress
+
 	tmp := make([]byte, len * parameters.N)
 	hashFunc := tweakable.Sha256Tweak{}
 
@@ -82,7 +91,7 @@ func Wots_sign(message []byte, SKseed []byte, PKseed []byte, adrs *address.ADRS)
 	// Recalculating len parameter, as it cannot be stored as a const in parameters.go
 	len1 := int(math.Ceil(8*parameters.N/math.Log2(parameters.W)))
 	len2 := int(math.Floor(math.Log2(math.Ceil(8*parameters.N/math.Log2(parameters.W-1)))/math.Log2(parameters.W))+1)
-	fmt.Println(len2)
+
 	len := len1 + len2
 
 	csum := 0
@@ -100,8 +109,6 @@ func Wots_sign(message []byte, SKseed []byte, PKseed []byte, adrs *address.ADRS)
 	}
 
 	len2_bytes := uint(math.Ceil( ( float64(len2) * math.Log2(parameters.W) ) / 8 ))
-	fmt.Println(len2_bytes)
-	fmt.Println(csum)
 	msg = append(msg, util.Base_w(util.ToByte(uint32(csum), len2_bytes), parameters.W, len2)...)
 	hashFunc := tweakable.Sha256Tweak{}
 
@@ -125,7 +132,17 @@ func Wots_pkFromSig(signature []byte, message []byte, PKseed []byte, adrs *addre
 	len := len1 + len2
 	
 	csum := 0
-	wotspkADRS := adrs
+
+	//wotspkADRS := adrs // Make a copy of adrs
+	wotspkADRS := new(address.ADRS)
+	wotspkADRS.LayerAddress = adrs.LayerAddress
+	wotspkADRS.TreeAddress = adrs.TreeAddress
+	wotspkADRS.Type = adrs.Type
+	wotspkADRS.KeyPairAddress = adrs.KeyPairAddress
+	wotspkADRS.TreeHeight = adrs.TreeHeight
+	wotspkADRS.TreeIndex = adrs.TreeIndex
+	wotspkADRS.ChainAddress = adrs.ChainAddress
+	wotspkADRS.HashAddress = adrs.HashAddress
 
 	// convert message to base w
 	msg := util.Base_w(message, parameters.W, len1)
