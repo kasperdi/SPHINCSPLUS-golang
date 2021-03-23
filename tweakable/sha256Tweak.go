@@ -15,8 +15,12 @@ type Sha256Tweak struct {
 
 // Tweakable hash function Hmsg
 func (h *Sha256Tweak) Hmsg(R []byte, PKseed []byte, PKroot []byte, M []byte) []byte {
-    concatenatedParams := append(append(append(R, PKseed...), PKroot...), M...)
-    hashedConc := hashMessage(concatenatedParams)
+    hash := sha256.New()
+    hash.Write(R)
+    hash.Write(PKseed)
+    hash.Write(PKroot)
+    hash.Write(M)
+    hashedConc := hash.Sum(nil)
     bitmask := mgf1sha256(hashedConc, 32)
     return bitmask
 }
@@ -24,15 +28,17 @@ func (h *Sha256Tweak) Hmsg(R []byte, PKseed []byte, PKroot []byte, M []byte) []b
 // Tweakable hash function PRF
 func (h *Sha256Tweak) PRF(SEED []byte, adrs *address.ADRS) []byte {
     compressedADRS := compressADRS(adrs)
-    concatenatedSEEDADRSc := append(SEED, compressedADRS...)
-    return hashMessage(concatenatedSEEDADRSc)
+    hash := sha256.New()
+    hash.Write(SEED)
+    hash.Write(compressedADRS)
+    return hash.Sum(nil)
 }
 
 // Tweakable hash function PRFmsg
 func (h *Sha256Tweak) PRFmsg(SKprf []byte, OptRand []byte, M []byte) []byte {
-    OptMConcatenated := append(OptRand, M...)
     mac := hmac.New(sha256.New, SKprf)
-    mac.Write(OptMConcatenated)
+    mac.Write(OptRand)
+    mac.Write(M)
     return mac.Sum(nil)
 }
 
@@ -49,9 +55,13 @@ func (h *Sha256Tweak) F(variant string, PKseed []byte, adrs *address.ADRS, tmp [
     }
 
     bytes := util.ToByte(0,64-parameters.N)
-    concatenatedParams := append(append(append(PKseed, bytes...), compressedADRS...), M1...)
     
-    return hashMessage(concatenatedParams)
+    hash := sha256.New()
+    hash.Write(PKseed)
+    hash.Write(bytes)
+    hash.Write(compressedADRS)
+    hash.Write(M1)
+    return hash.Sum(nil)
 }
 
 // Tweakable hash function H
@@ -74,9 +84,13 @@ func (h *Sha256Tweak) H(variant string, PKseed []byte, adrs *address.ADRS, tmp1 
     }
 
     bytes := util.ToByte(0,64-parameters.N)
-    concatenatedParams := append(append(append(PKseed, bytes...), compressedADRS...), M1M2...)
-    
-    return hashMessage(concatenatedParams)
+
+    hash := sha256.New()
+    hash.Write(PKseed)
+    hash.Write(bytes)
+    hash.Write(compressedADRS)
+    hash.Write(M1M2)
+    return hash.Sum(nil)
 }
 
 // Tweakable hash function T_l
@@ -92,15 +106,12 @@ func (h *Sha256Tweak) T_l(variant string, PKseed []byte, adrs *address.ADRS  , t
     }
 
     bytes := util.ToByte(0,64-parameters.N)
-    concatenatedParams := append(append(append(PKseed, bytes...), compressedADRS...), M...)
     
-    return hashMessage(concatenatedParams)
-}
-
-// Hashes a message using SHA-256
-func hashMessage(message []byte) []byte {
     hash := sha256.New()
-    hash.Write(message)
+    hash.Write(PKseed)
+    hash.Write(bytes)
+    hash.Write(compressedADRS)
+    hash.Write(M)
     return hash.Sum(nil)
 }
 
@@ -153,7 +164,10 @@ func mgf1sha256(seed []byte, length int) []byte {
     counter := 0
     for len(T) < length {
 		C := util.ToByte(uint32(counter), 4) //i2osp equivalent to ToByte
-        hashedZC := hashMessage(append(seed, C...))
+        hash := sha256.New()
+        hash.Write(seed)
+        hash.Write(C)
+        hashedZC := hash.Sum(nil)
         T = append(T, hashedZC...)
         counter++
 	}
