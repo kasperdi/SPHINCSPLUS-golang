@@ -23,7 +23,7 @@ TODO list
      - [X] Read The SPHINCS+ Signature Framework
 
 - [ ] Report
-    - [X] Litterature review section
+    - [X] Literature review section
     - [ ] Implementation section
     - [ ] Benchmarking section
     - [ ] Introduction
