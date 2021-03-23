@@ -18,7 +18,7 @@ TODO list
     - [ ] SPHINCS<sup>+</sup>-Haraka
     - [ ] RSA
 
-- [ ] Litterature
+- [X] Litterature
      - [X] Read Round 3 NIST proposal
      - [X] Read The SPHINCS+ Signature Framework
 
