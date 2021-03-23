@@ -1,4 +1,4 @@
-package WOTSplus
+package wots
 
 import (
 	"testing"

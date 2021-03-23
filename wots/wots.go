@@ -1,4 +1,4 @@
-package WOTSplus
+package wots
 
 import (
 	"math"
@@ -32,7 +32,7 @@ func chain(X []byte, startIndex int, steps int, PKseed []byte, adrs *address.ADR
 	return tmp
 }
 
-// WOTS+ private/secret key generation
+// WOTS+ private/secret key generation - NOT NEEDED FOR IMPLEMENTATION
 func Wots_SKgen(SKseed []byte, adrs *address.ADRS) []byte {
 	// Recalculating len parameter, as it cannot be stored as a const in parameters.go
 	len1 := int(math.Ceil(8*parameters.N/math.Log2(parameters.W)))
