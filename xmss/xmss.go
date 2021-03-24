@@ -1,22 +1,106 @@
 package xmss
 
 import (
+	"math"
+	"../wots"
 	"../address"
+	"../tweakable"
+	"../parameters"
+	"../util"
+	"fmt"
 )
 
-func treehash(SK.seed []byte, startIndex int, targetNodeHeight int, PK.seed []byte, adrs *address.ADRS) []byte {
-	return nil
+type XMSSSignature struct {
+	wotsSignature []byte
+	AUTH []byte
 }
 
-func xmss_PKgen(SK.seed []byte, PK.seed []byte, adrs *address.ADRS) []byte {
-	return nil
+func (s *XMSSSignature) GetWOTSSig() []byte {
+	return s.wotsSignature
 }
 
-func xmss_sign(M []byte, SK.seed []byte, idx int, PK.seed []byte, adrs *address.ADRS) []byte {
-	return nil
+func (s *XMSSSignature) GetXMSSAUTH() []byte {
+	return s.AUTH
 }
 
-func xmss_pkFromSig(idx int, SIG_XMSS []byte, M []byte, PK.seed []byte, adrs *address.ADRS) []byte {
-	return nil
+func treehash(SKseed []byte, startIndex int, targetNodeHeight int, PKseed []byte, adrs *address.ADRS) []byte {
+	if startIndex % (1 << targetNodeHeight) != 0 {
+		return nil
+	}
+
+	hashFunc := tweakable.Sha256Tweak{}
+	stack := util.Stack{}
+
+
+	for i := 0; i < int(math.Pow(2, float64(targetNodeHeight))); i++ {
+		adrs.SetType(parameters.WOTS_HASH)
+		adrs.SetKeyPairAddress(startIndex + i)
+		node := wots.Wots_PKgen(SKseed, PKseed, adrs.Copy())
+		adrs.SetType(parameters.TREE)
+		adrs.SetTreeHeight(1)
+		adrs.SetTreeIndex(startIndex + i)
+		if len(stack) > 0 {
+			for (stack.Peek().NodeHeight == targetNodeHeight) {
+				adrs.SetTreeIndex((adrs.GetTreeIndex() - 1) / 2)
+				node = hashFunc.H(tweakable.Robust, PKseed, adrs.Copy(), stack.Pop().Node, node)
+				adrs.SetTreeHeight(adrs.GetTreeHeight() + 1)
+			}
+		}
+		
+		stack.Push(&util.StackEntry{Node:node, NodeHeight:adrs.GetTreeHeight()})
+		
+	}
+	fmt.Println(stack.Peek())
+	return stack.Pop().Node
+}
+
+func Xmss_PKgen(SKseed []byte, PKseed []byte, adrs *address.ADRS) []byte {
+	pk := treehash(SKseed, 0, parameters.Hmark, PKseed, adrs.Copy() ) 
+	return pk
+}
+
+func Xmss_sign(M []byte, SKseed []byte, idx int, PKseed []byte, adrs *address.ADRS) *XMSSSignature {
+	AUTH := make([]byte, parameters.Hmark * parameters.N)
+	for i := 0; i < parameters.Hmark; i++ {
+		k := int(math.Floor(float64(idx) / math.Pow(2, float64(i)))) ^ 1
+		copy(AUTH[i * parameters.N:], treehash(SKseed, k * int(math.Pow(2, float64(i))), i, PKseed, adrs.Copy()))
+	}
+	
+	adrs.SetType(parameters.WOTS_HASH)
+	adrs.SetKeyPairAddress(idx)
+	sig := wots.Wots_sign(M, SKseed, PKseed, adrs.Copy())
+	
+	xmss_sig := &XMSSSignature{sig, AUTH}
+	
+	return xmss_sig
+}
+
+func Xmss_pkFromSig(idx int, SIG_XMSS *XMSSSignature, M []byte, PKseed []byte, adrs *address.ADRS) []byte {
+	// compute WOTS+ pk from WOTS+ sig
+	adrs.SetType(parameters.WOTS_HASH)
+	adrs.SetKeyPairAddress(idx)
+	sig := SIG_XMSS.GetWOTSSig()
+	AUTH := SIG_XMSS.GetXMSSAUTH()
+	
+	node0 := wots.Wots_pkFromSig(sig, M, PKseed, adrs.Copy())
+	node1 := make([]byte, 0)
+
+	hashFunc := tweakable.Sha256Tweak{}
+
+	// compute root from WOTS+ pk and AUTH
+	adrs.SetType(parameters.TREE)
+	adrs.SetTreeIndex(idx)
+	for k := 0; k < parameters.Hmark; k++ {
+		adrs.SetTreeHeight(k+1)
+		if int(math.Floor(float64(idx) / math.Pow(2, float64(k)))) % 2 == 0 {
+			adrs.SetTreeIndex(adrs.GetTreeIndex() / 2)
+			node1 = hashFunc.H(tweakable.Robust, PKseed, adrs.Copy(), node0, AUTH[k * parameters.N:(k+1)*parameters.N])
+		} else {
+			adrs.SetTreeIndex((adrs.GetTreeIndex() - 1) / 2)
+			node1 = hashFunc.H(tweakable.Robust, PKseed, adrs.Copy(), AUTH[k * parameters.N:(k+1)*parameters.N], node0)
+		}
+		node0 = node1
+	}
+	return node0
 }
 

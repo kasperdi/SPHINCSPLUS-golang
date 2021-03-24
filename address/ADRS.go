@@ -16,6 +16,19 @@ type ADRS struct {
 	HashAddress [4]byte
 }
 
+func (adrs *ADRS) Copy() *ADRS {
+	newADRS := new(ADRS)
+	newADRS.LayerAddress = adrs.LayerAddress
+	newADRS.TreeAddress = adrs.TreeAddress
+	newADRS.Type = adrs.Type
+	newADRS.KeyPairAddress = adrs.KeyPairAddress
+	newADRS.TreeHeight = adrs.TreeHeight
+	newADRS.TreeIndex = adrs.TreeIndex
+	newADRS.ChainAddress = adrs.ChainAddress
+	newADRS.HashAddress = adrs.HashAddress
+	return newADRS
+}
+
 func (adrs *ADRS) SetLayerAddress(a int) { //uint32 eller int
 	var layerAddress [4]byte
 	copy(layerAddress[:], util.ToByte(uint32(a), 4))	
@@ -70,3 +83,16 @@ func (adrs *ADRS) GetKeyPairAddress() int { //uint32 eller int
 	keyPairAddressUint32 := binary.LittleEndian.Uint32(keyPairAddressBytes)
 	return int(keyPairAddressUint32)
 }
+
+func (adrs *ADRS) GetTreeIndex() int { //uint32 eller int
+	treeIndexBytes := adrs.TreeIndex[:]
+	treeIndexUint32 := binary.LittleEndian.Uint32(treeIndexBytes)
+	return int(treeIndexUint32)
+}
+
+func (adrs *ADRS) GetTreeHeight() int { //uint32 eller int
+	treeHeightBytes := adrs.TreeHeight[:]
+	treeHeightUint32 := binary.LittleEndian.Uint32(treeHeightBytes)
+	return int(treeHeightUint32)
+}
+

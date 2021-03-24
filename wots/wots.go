@@ -8,11 +8,6 @@ import (
 	"../util"
 )
 
-const (
-	WOTS_HASH = 0
-	WOTS_PK = 1
-)
-
 // Calculates the value of F iterated s times on X
 func chain(X []byte, startIndex int, steps int, PKseed []byte, adrs *address.ADRS) []byte { //Replace ADRS with struct maybe
 	if(steps == 0) {
@@ -59,15 +54,7 @@ func Wots_PKgen(SKseed []byte, PKseed []byte, adrs *address.ADRS) []byte {
 	len := len1 + len2
 
 	//wotspkADRS := adrs // Make a copy of adrs
-	wotspkADRS := new(address.ADRS)
-	wotspkADRS.LayerAddress = adrs.LayerAddress
-	wotspkADRS.TreeAddress = adrs.TreeAddress
-	wotspkADRS.Type = adrs.Type
-	wotspkADRS.KeyPairAddress = adrs.KeyPairAddress
-	wotspkADRS.TreeHeight = adrs.TreeHeight
-	wotspkADRS.TreeIndex = adrs.TreeIndex
-	wotspkADRS.ChainAddress = adrs.ChainAddress
-	wotspkADRS.HashAddress = adrs.HashAddress
+	wotspkADRS := adrs.Copy()
 
 	tmp := make([]byte, len * parameters.N)
 	hashFunc := tweakable.Sha256Tweak{}
@@ -78,7 +65,7 @@ func Wots_PKgen(SKseed []byte, PKseed []byte, adrs *address.ADRS) []byte {
 		sk := hashFunc.PRF(SKseed, adrs)
 		copy(tmp[i * parameters.N:], chain(sk, 0, parameters.W - 1, PKseed, adrs))
 	}
-	wotspkADRS.SetType(WOTS_PK)
+	wotspkADRS.SetType(parameters.WOTS_PK)
 	wotspkADRS.SetKeyPairAddress(adrs.GetKeyPairAddress())
 
 	pk := make([]byte, len * parameters.N)
@@ -134,15 +121,7 @@ func Wots_pkFromSig(signature []byte, message []byte, PKseed []byte, adrs *addre
 	csum := 0
 
 	//wotspkADRS := adrs // Make a copy of adrs
-	wotspkADRS := new(address.ADRS)
-	wotspkADRS.LayerAddress = adrs.LayerAddress
-	wotspkADRS.TreeAddress = adrs.TreeAddress
-	wotspkADRS.Type = adrs.Type
-	wotspkADRS.KeyPairAddress = adrs.KeyPairAddress
-	wotspkADRS.TreeHeight = adrs.TreeHeight
-	wotspkADRS.TreeIndex = adrs.TreeIndex
-	wotspkADRS.ChainAddress = adrs.ChainAddress
-	wotspkADRS.HashAddress = adrs.HashAddress
+	wotspkADRS := adrs.Copy()
 
 	// convert message to base w
 	msg := util.Base_w(message, parameters.W, len1)
@@ -163,7 +142,7 @@ func Wots_pkFromSig(signature []byte, message []byte, PKseed []byte, adrs *addre
 		copy(tmp[i * parameters.N:], chain(signature[i * parameters.N:(i+1) * parameters.N], msg[i], parameters.W - 1 - msg[i], PKseed, adrs)) // IS THIS CORRECT??
 	}
 
-	wotspkADRS.SetType(WOTS_PK)
+	wotspkADRS.SetType(parameters.WOTS_PK)
 	wotspkADRS.SetKeyPairAddress(adrs.GetKeyPairAddress())
 	
 	pk_sig := hashFunc.T_l(tweakable.Robust, PKseed, wotspkADRS, tmp)

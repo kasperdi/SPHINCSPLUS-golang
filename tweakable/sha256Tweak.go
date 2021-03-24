@@ -94,7 +94,7 @@ func (h *Sha256Tweak) H(variant string, PKseed []byte, adrs *address.ADRS, tmp1 
 }
 
 // Tweakable hash function T_l
-func (h *Sha256Tweak) T_l(variant string, PKseed []byte, adrs *address.ADRS  , tmp []byte) []byte {
+func (h *Sha256Tweak) T_l(variant string, PKseed []byte, adrs *address.ADRS , tmp []byte) []byte {
     M := make([]byte, len(tmp))
     compressedADRS := compressADRS(adrs)
 
@@ -148,11 +148,17 @@ func compressADRS(adrs *address.ADRS) []byte {
         ADRSc = append(ADRSc, util.ToByte(0, 4)...)
         ADRSc = append(ADRSc, util.ToByte(0, 4)...)
     case 2:
-
+        ADRSc = append(ADRSc, util.ToByte(0, 4)...)
+        ADRSc = append(ADRSc, adrs.TreeHeight[:]...)
+        ADRSc = append(ADRSc, adrs.TreeIndex[:]...)
     case 3:
-
+        ADRSc = append(ADRSc, adrs.KeyPairAddress[:]...)
+        ADRSc = append(ADRSc, adrs.TreeHeight[:]...)
+        ADRSc = append(ADRSc, adrs.TreeIndex[:]...)
     case 4:
-
+        ADRSc = append(ADRSc, adrs.KeyPairAddress[:]...)
+        ADRSc = append(ADRSc, util.ToByte(0, 4)...)
+        ADRSc = append(ADRSc, util.ToByte(0, 4)...)
     }
 
     return ADRSc
