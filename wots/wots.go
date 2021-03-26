@@ -28,7 +28,7 @@ func chain(X []byte, startIndex int, steps int, PKseed []byte, adrs *address.ADR
 }
 
 // WOTS+ private/secret key generation - NOT NEEDED FOR IMPLEMENTATION
-func Wots_SKgen(SKseed []byte, adrs *address.ADRS) []byte {
+/* func Wots_SKgen(SKseed []byte, adrs *address.ADRS) []byte {
 	// Recalculating len parameter, as it cannot be stored as a const in parameters.go
 	len1 := int(math.Ceil(8*parameters.N/math.Log2(parameters.W)))
 	len2 := int(math.Floor(math.Log2(math.Ceil(8*parameters.N/math.Log2(parameters.W-1)))/math.Log2(parameters.W))+1)
@@ -44,7 +44,7 @@ func Wots_SKgen(SKseed []byte, adrs *address.ADRS) []byte {
 	}
 
 	return sk
-}
+} */
 
 // WOTS+ public key generation
 func Wots_PKgen(SKseed []byte, PKseed []byte, adrs *address.ADRS) []byte {

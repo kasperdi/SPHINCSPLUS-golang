@@ -26,11 +26,18 @@ func main() {
 	var adrs address.ADRS
 
 	PK := xmss.Xmss_PKgen(SKseed, PKseed, &adrs)
+	fmt.Println("Real PK")
 	fmt.Println(PK)
 
-	signature := xmss.Xmss_sign(message, SKseed, 0, PKseed, &adrs)
 
-	pkFromSig := xmss.Xmss_pkFromSig(0, signature, message, PKseed, &adrs)
+	var adrs2 address.ADRS
+
+	var adrs3 address.ADRS
+
+	signature := xmss.Xmss_sign(message, SKseed, 0, PKseed, &adrs2)
+
+	pkFromSig := xmss.Xmss_pkFromSig(0, signature, message, PKseed, &adrs3)
+	fmt.Println("Calculated PK")
 	fmt.Println(pkFromSig)
 	
 	fmt.Println(bytes.Equal(pkFromSig, PK))

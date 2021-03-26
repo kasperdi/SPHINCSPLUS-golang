@@ -44,11 +44,15 @@ func TestSignVerifyWrongKey(t *testing.T) {
 		rand.Read(SKseed)
 		var adrs address.ADRS
 
+		var adrs2 address.ADRS
+
+		var adrs3 address.ADRS
+
 		PK := Wots_PKgen(SKseed, PKseed, &adrs)
 
-		signature := Wots_sign(message, SKseed, PKseed, &adrs)
+		signature := Wots_sign(message, SKseed, PKseed, &adrs2)
 
-		pkFromSig := Wots_pkFromSig(signature, wrongMessage, PKseed, &adrs)
+		pkFromSig := Wots_pkFromSig(signature, wrongMessage, PKseed, &adrs3)
 		if(bytes.Equal(pkFromSig, PK)) {
 			t.Errorf("Verification of signed message succeeded, but was expected to fail!")
 		}

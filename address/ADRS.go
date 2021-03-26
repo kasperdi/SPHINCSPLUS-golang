@@ -80,19 +80,19 @@ func (adrs *ADRS) SetHashAddress(a int) { //uint32 eller int
 
 func (adrs *ADRS) GetKeyPairAddress() int { //uint32 eller int
 	keyPairAddressBytes := adrs.KeyPairAddress[:]
-	keyPairAddressUint32 := binary.LittleEndian.Uint32(keyPairAddressBytes)
+	keyPairAddressUint32 := binary.BigEndian.Uint32(keyPairAddressBytes)
 	return int(keyPairAddressUint32)
 }
 
 func (adrs *ADRS) GetTreeIndex() int { //uint32 eller int
 	treeIndexBytes := adrs.TreeIndex[:]
-	treeIndexUint32 := binary.LittleEndian.Uint32(treeIndexBytes)
+	treeIndexUint32 := binary.BigEndian.Uint32(treeIndexBytes)
 	return int(treeIndexUint32)
 }
 
 func (adrs *ADRS) GetTreeHeight() int { //uint32 eller int
 	treeHeightBytes := adrs.TreeHeight[:]
-	treeHeightUint32 := binary.LittleEndian.Uint32(treeHeightBytes)
+	treeHeightUint32 := binary.BigEndian.Uint32(treeHeightBytes)
 	return int(treeHeightUint32)
 }
 

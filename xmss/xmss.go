@@ -39,31 +39,34 @@ func treehash(SKseed []byte, startIndex int, targetNodeHeight int, PKseed []byte
 		adrs.SetType(parameters.TREE)
 		adrs.SetTreeHeight(1)
 		adrs.SetTreeIndex(startIndex + i)
-		if len(stack) > 0 {
-			for (stack.Peek().NodeHeight == targetNodeHeight) {
-				adrs.SetTreeIndex((adrs.GetTreeIndex() - 1) / 2)
-				node = hashFunc.H(tweakable.Robust, PKseed, adrs.Copy(), stack.Pop().Node, node)
-				adrs.SetTreeHeight(adrs.GetTreeHeight() + 1)
-			}
+			
+		for (len(stack) > 0 && (stack.Peek().NodeHeight == targetNodeHeight)) {
+			adrs.SetTreeIndex((adrs.GetTreeIndex() - 1) / 2)
+			node = hashFunc.H(tweakable.Robust, PKseed, adrs.Copy(), stack.Pop().Node, node)
+			adrs.SetTreeHeight(adrs.GetTreeHeight() + 1)
 		}
 		
 		stack.Push(&util.StackEntry{Node:node, NodeHeight:adrs.GetTreeHeight()})
 		
 	}
-	fmt.Println(stack.Peek())
+	//fmt.Println(stack.Peek())
 	return stack.Pop().Node
 }
 
 func Xmss_PKgen(SKseed []byte, PKseed []byte, adrs *address.ADRS) []byte {
-	pk := treehash(SKseed, 0, parameters.Hmark, PKseed, adrs.Copy() ) 
+	pk := treehash(SKseed, 0, parameters.Hmark, PKseed, adrs) 
 	return pk
 }
 
 func Xmss_sign(M []byte, SKseed []byte, idx int, PKseed []byte, adrs *address.ADRS) *XMSSSignature {
 	AUTH := make([]byte, parameters.Hmark * parameters.N)
+	fmt.Println("SIGN")
 	for i := 0; i < parameters.Hmark; i++ {
 		k := int(math.Floor(float64(idx) / math.Pow(2, float64(i)))) ^ 1
-		copy(AUTH[i * parameters.N:], treehash(SKseed, k * int(math.Pow(2, float64(i))), i, PKseed, adrs.Copy()))
+		test := treehash(SKseed, k * int(math.Pow(2, float64(i))), i, PKseed, adrs.Copy())
+		copy(AUTH[i * parameters.N:], test)
+		fmt.Println(test)
+
 	}
 	
 	adrs.SetType(parameters.WOTS_HASH)
@@ -90,6 +93,7 @@ func Xmss_pkFromSig(idx int, SIG_XMSS *XMSSSignature, M []byte, PKseed []byte, a
 	// compute root from WOTS+ pk and AUTH
 	adrs.SetType(parameters.TREE)
 	adrs.SetTreeIndex(idx)
+	fmt.Println("PKFROMSIG")
 	for k := 0; k < parameters.Hmark; k++ {
 		adrs.SetTreeHeight(k+1)
 		if int(math.Floor(float64(idx) / math.Pow(2, float64(k)))) % 2 == 0 {
@@ -99,6 +103,7 @@ func Xmss_pkFromSig(idx int, SIG_XMSS *XMSSSignature, M []byte, PKseed []byte, a
 			adrs.SetTreeIndex((adrs.GetTreeIndex() - 1) / 2)
 			node1 = hashFunc.H(tweakable.Robust, PKseed, adrs.Copy(), AUTH[k * parameters.N:(k+1)*parameters.N], node0)
 		}
+		fmt.Println(node1)
 		node0 = node1
 	}
 	return node0
