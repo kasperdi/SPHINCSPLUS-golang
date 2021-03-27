@@ -6,6 +6,7 @@ import (
 	"../address"
 	"../parameters"
 	"../util"
+	"fmt"
 )
 
 // Calculates the value of F iterated s times on X
@@ -95,8 +96,9 @@ func Wots_sign(message []byte, SKseed []byte, PKseed []byte, adrs *address.ADRS)
 		csum = csum << (8 - ((len2 * int(math.Log2(parameters.W))) % 8))
 	}
 
-	len2_bytes := uint(math.Ceil( ( float64(len2) * math.Log2(parameters.W) ) / 8 ))
-	msg = append(msg, util.Base_w(util.ToByte(uint32(csum), len2_bytes), parameters.W, len2)...)
+	len2_bytes := int(math.Ceil( ( float64(len2) * math.Log2(parameters.W) ) / 8 ))
+	fmt.Println(msg)
+	msg = append(msg, util.Base_w(util.ToByte2(csum, len2_bytes), parameters.W, len2)...)
 	hashFunc := tweakable.Sha256Tweak{}
 
 	sig := make([]byte, len * parameters.N)
@@ -133,7 +135,7 @@ func Wots_pkFromSig(signature []byte, message []byte, PKseed []byte, adrs *addre
 
 	csum = csum << (8 - ((len2*int(math.Log2(parameters.W)))% 8))
 	len2_bytes := int(math.Ceil( ( float64(len2) * math.Log2(parameters.W) ) / 8 ))
-	msg = append(msg, util.Base_w(util.ToByte(uint32(csum), uint(len2_bytes)), parameters.W, len2)...)
+	msg = append(msg, util.Base_w(util.ToByte2(csum, len2_bytes), parameters.W, len2)...)
 	hashFunc := tweakable.Sha256Tweak{}
 	tmp := make([]byte, len * parameters.N)
 	

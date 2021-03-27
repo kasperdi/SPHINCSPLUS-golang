@@ -37,13 +37,15 @@ func main() {
 
 	signature := xmss.Xmss_sign(message, SKseed, 0, PKseed, &adrs2)
 
-	pkFromSig := xmss.Xmss_pkFromSig(0, signature, message, PKseed, &adrs3)
+	pkFromSig := xmss.Xmss_pkFromSig(0, signature, message, PKseed, &adrs3) 
 	fmt.Println("Calculated PK")
 	fmt.Println(pkFromSig)
 	
 	fmt.Println(bytes.Equal(pkFromSig, PK))
 
-	fmt.Println(util.ToByte(71241, 15))
-	fmt.Println(util.ToByte2(71241, 15))
+	fmt.Println(string(util.ToByte(42, 5)))
+	fmt.Println(string(util.ToByte2(42, 15)))
+	
+	fmt.Println(util.Base_w(util.ToByte(42, 4), 16, 4))
 
 }
