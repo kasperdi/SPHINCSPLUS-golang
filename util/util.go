@@ -38,7 +38,7 @@ func Base_w(X []byte, w int, out_len int) []int {
 			bits += 8
 		}
 		bits -= int(math.Log2(float64(w)))
-		basew[out] = (total >> bits) & (w - 1)
+		basew[out] = (int(total) >> bits) & (w - 1)
 		out++
 	}
 	return basew

@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"./xmss"
 	"./address"
+	"./util"
 )
 
 func main() {
@@ -41,5 +42,8 @@ func main() {
 	fmt.Println(pkFromSig)
 	
 	fmt.Println(bytes.Equal(pkFromSig, PK))
+
+	fmt.Println(util.ToByte(71241, 15))
+	fmt.Println(util.ToByte2(71241, 15))
 
 }

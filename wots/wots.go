@@ -50,7 +50,7 @@ func chain(X []byte, startIndex int, steps int, PKseed []byte, adrs *address.ADR
 func Wots_PKgen(SKseed []byte, PKseed []byte, adrs *address.ADRS) []byte {
 	// Recalculating len parameter, as it cannot be stored as a const in parameters.go
 	len1 := int(math.Ceil(8*parameters.N/math.Log2(parameters.W)))
-	len2 := int(math.Floor(math.Log2(math.Ceil(8*parameters.N/math.Log2(parameters.W-1)))/math.Log2(parameters.W))+1)
+	len2 := int(math.Floor(math.Log2(float64(len1)*(parameters.W-1))/math.Log2(parameters.W))+1)
 	len := len1 + len2
 
 	//wotspkADRS := adrs // Make a copy of adrs
@@ -77,7 +77,7 @@ func Wots_PKgen(SKseed []byte, PKseed []byte, adrs *address.ADRS) []byte {
 func Wots_sign(message []byte, SKseed []byte, PKseed []byte, adrs *address.ADRS) []byte {
 	// Recalculating len parameter, as it cannot be stored as a const in parameters.go
 	len1 := int(math.Ceil(8*parameters.N/math.Log2(parameters.W)))
-	len2 := int(math.Floor(math.Log2(math.Ceil(8*parameters.N/math.Log2(parameters.W-1)))/math.Log2(parameters.W))+1)
+	len2 := int(math.Floor(math.Log2(float64(len1)*(parameters.W-1))/math.Log2(parameters.W))+1)
 
 	len := len1 + len2
 
@@ -115,7 +115,7 @@ func Wots_sign(message []byte, SKseed []byte, PKseed []byte, adrs *address.ADRS)
 func Wots_pkFromSig(signature []byte, message []byte, PKseed []byte, adrs *address.ADRS) []byte {
 	// Recalculating len parameter, as it cannot be stored as a const in parameters.go
 	len1 := int(math.Ceil(8*parameters.N/math.Log2(parameters.W)))
-	len2 := int(math.Floor(math.Log2(math.Ceil(8*parameters.N/math.Log2(parameters.W-1)))/math.Log2(parameters.W))+1)
+	len2 := int(math.Floor(math.Log2(float64(len1)*(parameters.W-1))/math.Log2(parameters.W))+1)
 	len := len1 + len2
 	
 	csum := 0

@@ -4,7 +4,7 @@ package parameters
 const ( 
 	// Parameters for WOTS+
 	N = 32
-	W = 4
+	W = 16
 	
 
 	// Parameters for XMSS
