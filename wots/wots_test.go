@@ -44,10 +44,8 @@ func TestSignVerifyWrongKey(t *testing.T) {
 		rand.Read(SKseed)
 		PKseed := make([]byte, 32)
 		rand.Read(SKseed)
-		var adrs address.ADRS
-
+		var adrs address.ADRS  // Are 3 needed?
 		var adrs2 address.ADRS
-
 		var adrs3 address.ADRS
 
 		PK := Wots_PKgen(SKseed, PKseed, &adrs)

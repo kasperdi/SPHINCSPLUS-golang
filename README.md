@@ -7,7 +7,7 @@ TODO list
 - [ ] Implementation
     - [X] SHA-256 tweakable hash function
     - [X] WOTS+
-    - [ ] XMSS
+    - [X] XMSS
     - [ ] HyperTree
     - [ ] FORS+
     - [ ] SPHINCS+

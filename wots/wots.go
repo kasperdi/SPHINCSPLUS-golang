@@ -6,7 +6,7 @@ import (
 	"../address"
 	"../parameters"
 	"../util"
-	"fmt"
+
 )
 
 // Calculates the value of F iterated s times on X
@@ -97,7 +97,6 @@ func Wots_sign(message []byte, SKseed []byte, PKseed []byte, adrs *address.ADRS)
 	}
 
 	len2_bytes := int(math.Ceil( ( float64(len2) * math.Log2(parameters.W) ) / 8 ))
-	fmt.Println(msg)
 	msg = append(msg, util.Base_w(util.ToByte2(csum, len2_bytes), parameters.W, len2)...)
 	hashFunc := tweakable.Sha256Tweak{}
 
