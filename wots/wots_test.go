@@ -30,7 +30,6 @@ func TestSignAndVerify(t *testing.T) {
 		}
 	}
 	
-
 }
 
 // Ensures that a wrong key cannot be used to verify a message

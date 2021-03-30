@@ -4,9 +4,40 @@ import (
 	"testing"
 	"crypto/rand"
 	"bytes"
+	"encoding/hex"
 	"../address"
 	"../parameters"
 )
+
+func TestSha256n256fRobust(t *testing.T) {
+	msg := "Nola pustulata, the sharp-blotched nola, is a species of nolid moth in the family Nolidae."
+	tmp := make([]byte, 32)
+	for i := 0; i < 32; i++ {
+		tmp[i] = byte(i);
+	}
+	SKseed := make([]byte, 32)
+
+	var adrs address.ADRS
+	adrs.SetType(parameters.FORS_TREE)
+
+	pk1 := Fors_PKgen(SKseed, tmp, &adrs)
+
+	msgAsBytes := []byte(msg)
+
+	signature := Fors_sign(msgAsBytes, SKseed, tmp, &adrs)
+	pkFromSig := Fors_pkFromSig(signature, msgAsBytes, tmp, &adrs)
+
+	pkFromRefImpl := "a4712bc29fad5a1bd4fc0d1caefae10e207faeea3215a5eb9ce0e32e261b8792"
+
+	if(!bytes.Equal(pkFromSig, pk1)) {
+		t.Errorf("Verification of signed message failed, but was expected to succeed!")
+	}
+	originalPKHex := hex.EncodeToString(pk1)
+	if(pkFromRefImpl != originalPKHex) {
+		t.Errorf("Expected PK: %s, but got PK: %s", pkFromRefImpl, originalPKHex)
+	}
+
+}
 
 // Tests that signed messages can be verified with the correct signature
 func TestSignAndVerify(t *testing.T) {
