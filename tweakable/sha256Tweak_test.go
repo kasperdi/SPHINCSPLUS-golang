@@ -16,8 +16,16 @@ func TestMgf1Sha256(t *testing.T) { //TODO: MORE TEST CASES, GENERATE DATA USING
 	if (expected != result) {
 		t.Errorf("Expected: %s, but got %s", expected, result)
 	}
-	
-
+	result2 := hex.EncodeToString(mgf1sha256([]byte("placeholder"), 42))
+	expected2 := "1dee959de5c4caf4a2295477c4c505394f13ed78066dde0cd77912872e66552db66abc55d72b67c51d93"
+	if (expected2 != result2) {
+		t.Errorf("Expected: %s, but got %s", expected2, result2)
+	}
+	result3 := hex.EncodeToString(mgf1sha256([]byte("test"), 10))
+	expected3 := "9134a6432bb8da899b90"
+	if (expected3 != result3) {
+		t.Errorf("Expected: %s, but got %s", expected3, result3)
+	}
 }
 
 // Test of ADRS compression ADRSc for ADRS type 0

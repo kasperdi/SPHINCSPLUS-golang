@@ -18,7 +18,7 @@ func TestSha256n256fRobust(t *testing.T) {
 	SKseed := make([]byte, 32)
 
 	var adrs address.ADRS
-	adrs.SetType(parameters.TREE)
+	adrs.SetType(parameters.FORS_TREE)
 
 	pk1 := Fors_PKgen(SKseed, tmp, &adrs)
 
