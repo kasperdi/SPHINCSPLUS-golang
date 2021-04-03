@@ -83,7 +83,7 @@ func (h *Sha256Tweak) H(variant string, PKseed []byte, adrs *address.ADRS, tmp1 
         M1M2 = append(tmp1, tmp2...)
     }
 
-    bytes := util.ToByte(0,64-parameters.N)
+    bytes := make([]byte, 64-parameters.N)
 
     hash := sha256.New()
     hash.Write(PKseed)
@@ -139,26 +139,26 @@ func compressADRS(adrs *address.ADRS) []byte {
     ADRSc = append(ADRSc, adrs.Type[3:4]...)
 
     switch typ {
-    case 0:
+    case WOTS_HASH:
         ADRSc = append(ADRSc, adrs.KeyPairAddress[:]...)
         ADRSc = append(ADRSc, adrs.ChainAddress[:]...)
         ADRSc = append(ADRSc, adrs.HashAddress[:]...)
-    case 1:
+    case WOTS_PK:
         ADRSc = append(ADRSc, adrs.KeyPairAddress[:]...)
-        ADRSc = append(ADRSc, util.ToByte(0, 4)...)
-        ADRSc = append(ADRSc, util.ToByte(0, 4)...)
-    case 2:
-        ADRSc = append(ADRSc, util.ToByte(0, 4)...)
+        ADRSc = append(ADRSc, make([]byte, 4)...)
+        ADRSc = append(ADRSc, make([]byte, 4)...)
+    case TREE:
+        ADRSc = append(ADRSc, make([]byte, 4)...)
         ADRSc = append(ADRSc, adrs.TreeHeight[:]...)
         ADRSc = append(ADRSc, adrs.TreeIndex[:]...)
-    case 3:
+    case FORS_TREE:
         ADRSc = append(ADRSc, adrs.KeyPairAddress[:]...)
         ADRSc = append(ADRSc, adrs.TreeHeight[:]...)
         ADRSc = append(ADRSc, adrs.TreeIndex[:]...)
-    case 4:
+    case FORS_ROOTS:
         ADRSc = append(ADRSc, adrs.KeyPairAddress[:]...)
-        ADRSc = append(ADRSc, util.ToByte(0, 4)...)
-        ADRSc = append(ADRSc, util.ToByte(0, 4)...)
+        ADRSc = append(ADRSc, make([]byte, 4)...)
+        ADRSc = append(ADRSc, make([]byte, 4)...)
     }
 
     return ADRSc

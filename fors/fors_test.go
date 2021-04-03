@@ -18,7 +18,7 @@ func TestSha256n256fRobust(t *testing.T) {
 	SKseed := make([]byte, 32)
 
 	var adrs address.ADRS
-	adrs.SetType(parameters.FORS_TREE)
+	adrs.SetType(parameters.TREE)
 
 	pk1 := Fors_PKgen(SKseed, tmp, &adrs)
 
@@ -27,7 +27,7 @@ func TestSha256n256fRobust(t *testing.T) {
 	signature := Fors_sign(msgAsBytes, SKseed, tmp, &adrs)
 	pkFromSig := Fors_pkFromSig(signature, msgAsBytes, tmp, &adrs)
 
-	pkFromRefImpl := "a4712bc29fad5a1bd4fc0d1caefae10e207faeea3215a5eb9ce0e32e261b8792"
+	pkFromRefImpl := "efcc07e6dcfa255faa8b8a9f79cf55eef7632bd26fe195c61db17e9f27981c4b"
 
 	if(!bytes.Equal(pkFromSig, pk1)) {
 		t.Errorf("Verification of signed message failed, but was expected to succeed!")

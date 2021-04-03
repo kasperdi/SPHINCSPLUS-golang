@@ -88,7 +88,7 @@ func Fors_sign(M []byte, SKseed []byte, PKseed []byte, adrs *address.ADRS) *FORS
 		// get next index
 		// unsigned int idx = bits i*log(t) to (i+1)*log(t) - 1 of M;
 		idx := binary.BigEndian.Uint64(M)
-		idx = (idx >> (i*parameters.LogT) % (parameters.T - 1)) //CHANGE THIS
+		idx = (idx >> (i*parameters.LogT) % (parameters.T)) //CHANGE THIS
 		
 
 		// pick private key element
@@ -114,7 +114,7 @@ func Fors_pkFromSig(SIG_FORS *FORSSignature, M []byte, PKseed []byte, adrs *addr
 	for i := 0; i < parameters.K; i++ {
 		// get next index
 		idx := binary.BigEndian.Uint64(M)
-		idx = (idx >> (i*parameters.LogT) % (parameters.T - 1)) //CHANGE THIS
+		idx = (idx >> (i*parameters.LogT) % (parameters.T)) //CHANGE THIS
 
 		// compute leaf
 		sk := SIG_FORS.GetSK(i)
