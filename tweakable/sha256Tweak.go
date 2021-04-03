@@ -139,23 +139,23 @@ func compressADRS(adrs *address.ADRS) []byte {
     ADRSc = append(ADRSc, adrs.Type[3:4]...)
 
     switch typ {
-    case WOTS_HASH:
+    case parameters.WOTS_HASH:
         ADRSc = append(ADRSc, adrs.KeyPairAddress[:]...)
         ADRSc = append(ADRSc, adrs.ChainAddress[:]...)
         ADRSc = append(ADRSc, adrs.HashAddress[:]...)
-    case WOTS_PK:
+    case parameters.WOTS_PK:
         ADRSc = append(ADRSc, adrs.KeyPairAddress[:]...)
         ADRSc = append(ADRSc, make([]byte, 4)...)
         ADRSc = append(ADRSc, make([]byte, 4)...)
-    case TREE:
+    case parameters.TREE:
         ADRSc = append(ADRSc, make([]byte, 4)...)
         ADRSc = append(ADRSc, adrs.TreeHeight[:]...)
         ADRSc = append(ADRSc, adrs.TreeIndex[:]...)
-    case FORS_TREE:
+    case parameters.FORS_TREE:
         ADRSc = append(ADRSc, adrs.KeyPairAddress[:]...)
         ADRSc = append(ADRSc, adrs.TreeHeight[:]...)
         ADRSc = append(ADRSc, adrs.TreeIndex[:]...)
-    case FORS_ROOTS:
+    case parameters.FORS_ROOTS:
         ADRSc = append(ADRSc, adrs.KeyPairAddress[:]...)
         ADRSc = append(ADRSc, make([]byte, 4)...)
         ADRSc = append(ADRSc, make([]byte, 4)...)
