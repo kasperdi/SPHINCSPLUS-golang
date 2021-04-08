@@ -47,14 +47,13 @@ func (h *Sha256Tweak) F(variant string, PKseed []byte, adrs *address.ADRS, tmp [
     M1 := make([]byte, len(tmp))
     compressedADRS := compressADRS(adrs)
 
+    M1 = tmp
     if variant == Robust {
         bitmask := mgf1sha256(append(PKseed, compressedADRS...), len(tmp))
-        M1 = xorBytes(tmp, bitmask) 
-    } else if variant == Simple {
-        M1 = tmp
+        M1 = xorBytes(M1, bitmask) 
     }
 
-    bytes := util.ToByte(0,64-parameters.N)
+    bytes := make([]byte, 64-parameters.N)
     
     hash := sha256.New()
     hash.Write(PKseed)
@@ -69,18 +68,10 @@ func (h *Sha256Tweak) H(variant string, PKseed []byte, adrs *address.ADRS, tmp1 
     M1M2 := make([]byte, len(tmp1)+len(tmp2))
     compressedADRS := compressADRS(adrs)
 
+    M1M2 = append(tmp1, tmp2...)
     if variant == Robust {
-        bitmaskM1 := mgf1sha256(append(PKseed, compressedADRS...), len(tmp1))
-        M1 := make([]byte, len(tmp1))
-        M1 = xorBytes(tmp1, bitmaskM1)
-
-        bitmaskM2 := mgf1sha256(append(PKseed, compressedADRS...), len(tmp2))
-        M2 := make([]byte, len(tmp2))
-        M2 = xorBytes(tmp2, bitmaskM2)
-
-        M1M2 = append(M1, M2...)
-    } else if variant == Simple {
-        M1M2 = append(tmp1, tmp2...)
+        bitmask := mgf1sha256(append(PKseed, compressedADRS...), len(tmp1)+len(tmp2))
+        M1M2 = xorBytes(M1M2, bitmask)
     }
 
     bytes := make([]byte, 64-parameters.N)
@@ -105,7 +96,7 @@ func (h *Sha256Tweak) T_l(variant string, PKseed []byte, adrs *address.ADRS , tm
         M = tmp
     }
 
-    bytes := util.ToByte(0,64-parameters.N)
+    bytes := make([]byte, 64-parameters.N)
     
     hash := sha256.New()
     hash.Write(PKseed)

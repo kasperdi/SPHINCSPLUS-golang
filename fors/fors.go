@@ -84,19 +84,19 @@ func Fors_sign(M []byte, SKseed []byte, PKseed []byte, adrs *address.ADRS) *FORS
 	hashFunc := tweakable.Sha256Tweak{}
 	// compute signature elements
 	SIG_FORS := new(FORSSignature)
+
 	for i := 0; i < parameters.K; i++ {
 		// get next index
 		// unsigned int idx = bits i*log(t) to (i+1)*log(t) - 1 of M;
 		idx := binary.BigEndian.Uint64(M)
-		idx = (idx >> (i*parameters.LogT) % (parameters.T)) //CHANGE THIS
+		idx = (idx >> (parameters.K - 1 - i) * parameters.A) % parameters.T //CHANGE THIS
 		
-
 		// pick private key element
 		adrs.SetTreeHeight(0)
 		adrs.SetTreeIndex(i*parameters.T + int(idx)) // Can the int(idx) give problems due to unsigned 64 bit -> signed int conversion
 		PKElement := hashFunc.PRF(SKseed, adrs)
 
-		AUTH := make([]byte, parameters.LogT*parameters.N)
+		AUTH := make([]byte, parameters.A*parameters.N)
 		for j := 0; j < parameters.A; j++ {
 			s := int(math.Floor(float64(idx)/math.Pow(2, float64(j)))) ^ 1
 			copy(AUTH[j * parameters.N:], fors_treehash(SKseed, i * parameters.T + s * int(math.Pow(2, float64(j))), j, PKseed, adrs))
@@ -109,12 +109,11 @@ func Fors_sign(M []byte, SKseed []byte, PKseed []byte, adrs *address.ADRS) *FORS
 func Fors_pkFromSig(SIG_FORS *FORSSignature, M []byte, PKseed []byte, adrs *address.ADRS) []byte {
 	hashFunc := tweakable.Sha256Tweak{}
 	root := make([]byte, parameters.K*parameters.N)
-	forsPKadrs := adrs.Copy()
 
 	for i := 0; i < parameters.K; i++ {
 		// get next index
 		idx := binary.BigEndian.Uint64(M)
-		idx = (idx >> (i*parameters.LogT) % (parameters.T)) //CHANGE THIS
+		idx = (idx >> (parameters.K - 1 - i) * parameters.A) % parameters.T //CHANGE THIS
 
 		// compute leaf
 		sk := SIG_FORS.GetSK(i)
@@ -140,6 +139,7 @@ func Fors_pkFromSig(SIG_FORS *FORSSignature, M []byte, PKseed []byte, adrs *addr
 		copy(root[i * parameters.N:], node0)
 	}
 
+	forsPKadrs := adrs.Copy()
 	forsPKadrs.SetType(parameters.FORS_ROOTS)
 	forsPKadrs.SetKeyPairAddress(adrs.GetKeyPairAddress())
 	pk := hashFunc.T_l(tweakable.Robust, PKseed, forsPKadrs, root)

@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"../address"
 	"../parameters"
+	"fmt"
 )
 
 func TestSha256n256fRobust(t *testing.T) {
@@ -29,10 +30,13 @@ func TestSha256n256fRobust(t *testing.T) {
 
 	pkFromRefImpl := "efcc07e6dcfa255faa8b8a9f79cf55eef7632bd26fe195c61db17e9f27981c4b"
 
+	fmt.Println(hex.EncodeToString(signature.GetSK(0)))
+
 	if(!bytes.Equal(pkFromSig, pk1)) {
 		t.Errorf("Verification of signed message failed, but was expected to succeed!")
 	}
 	originalPKHex := hex.EncodeToString(pk1)
+	
 	if(pkFromRefImpl != originalPKHex) {
 		t.Errorf("Expected PK: %s, but got PK: %s", pkFromRefImpl, originalPKHex)
 	}
