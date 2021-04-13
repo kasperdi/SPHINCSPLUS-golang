@@ -20,6 +20,7 @@ const (
 	A = 9
 
 	// Parameters for SPHINCS+
+	RANDOMIZE = false
 
 	// ADRS types
 	WOTS_HASH = 0

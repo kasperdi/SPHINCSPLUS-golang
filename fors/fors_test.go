@@ -2,7 +2,7 @@ package fors
 
 import (
 	"testing"
-	"crypto/rand"
+	//"crypto/rand"
 	"bytes"
 	"encoding/hex"
 	"../address"
@@ -30,13 +30,14 @@ func TestSha256n256fRobust(t *testing.T) {
 
 	pkFromRefImpl := "efcc07e6dcfa255faa8b8a9f79cf55eef7632bd26fe195c61db17e9f27981c4b"
 
-	fmt.Println(hex.EncodeToString(signature.GetSK(0)))
+	//fmt.Println(hex.EncodeToString(signature.GetSK(15)))
 
 	if(!bytes.Equal(pkFromSig, pk1)) {
 		t.Errorf("Verification of signed message failed, but was expected to succeed!")
 	}
 	originalPKHex := hex.EncodeToString(pk1)
 	
+	fmt.Println(hex.EncodeToString(pkFromSig))
 	if(pkFromRefImpl != originalPKHex) {
 		t.Errorf("Expected PK: %s, but got PK: %s", pkFromRefImpl, originalPKHex)
 	}
@@ -44,9 +45,9 @@ func TestSha256n256fRobust(t *testing.T) {
 }
 
 // Tests that signed messages can be verified with the correct signature
-func TestSignAndVerify(t *testing.T) {
+/* func TestSignAndVerify(t *testing.T) {
 	for i := 1; i < 10; i++ {
-		message := make([]byte, 32)
+		message := make([]byte, 64)
 		rand.Read(message)
 		SKseed := make([]byte, 32)
 		rand.Read(SKseed)
@@ -64,13 +65,13 @@ func TestSignAndVerify(t *testing.T) {
 			t.Errorf("Verification of signed message failed, but was expected to succeed!")
 		}
 	}
-}
+} */
 
-func TestSignVerifyWrongKey(t *testing.T) {
+/* func TestSignVerifyWrongKey(t *testing.T) {
 	for i := 1; i < 10; i++ {
-		message := make([]byte, 32)
+		message := make([]byte, 64)
 		rand.Read(message)
-		wrongMessage := make([]byte, 32)
+		wrongMessage := make([]byte, 64)
 		rand.Read(wrongMessage)
 		SKseed := make([]byte, 32)
 		rand.Read(SKseed)
@@ -90,4 +91,4 @@ func TestSignVerifyWrongKey(t *testing.T) {
 	}
 	
 
-}
+} */

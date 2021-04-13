@@ -2,11 +2,11 @@ package fors
 
 import (
 	"math"
-	"encoding/binary"
 	"../util"
 	"../tweakable"
 	"../address"
 	"../parameters"
+	"fmt"
 )
 
 type FORSSignature struct {
@@ -75,10 +75,27 @@ func Fors_PKgen(SKseed []byte, PKseed []byte, adrs *address.ADRS) []byte {
 	}
 	forsPKadrs.SetType(parameters.FORS_ROOTS)
 	forsPKadrs.SetKeyPairAddress(adrs.GetKeyPairAddress())
+	fmt.Println(root)
 	pk := hashFunc.T_l(tweakable.Robust, PKseed, forsPKadrs, root)
 	
 	return pk
 }
+
+// Taken from reference implementation and converted into Go code
+func message_to_indices(M []byte) []int {
+    offset := 0
+	indices := make([]int, parameters.K)
+
+    for i := 0; i < parameters.K; i++ {
+        indices[i] = 0
+        for j := 0; j < parameters.A; j++ {
+            indices[i] ^= ((int(M[offset >> 3]) >> (offset & 0x7)) & 0x1) << j
+            offset++
+        }
+    }
+	return indices
+}
+
 
 func Fors_sign(M []byte, SKseed []byte, PKseed []byte, adrs *address.ADRS) *FORSSignature {
 	hashFunc := tweakable.Sha256Tweak{}
@@ -88,46 +105,45 @@ func Fors_sign(M []byte, SKseed []byte, PKseed []byte, adrs *address.ADRS) *FORS
 	for i := 0; i < parameters.K; i++ {
 		// get next index
 		// unsigned int idx = bits i*log(t) to (i+1)*log(t) - 1 of M;
-		idx := binary.BigEndian.Uint64(M)
-		idx = (idx >> (parameters.K - 1 - i) * parameters.A) % parameters.T //CHANGE THIS
+		indices := message_to_indices(M)
 		
 		// pick private key element
 		adrs.SetTreeHeight(0)
-		adrs.SetTreeIndex(i*parameters.T + int(idx)) // Can the int(idx) give problems due to unsigned 64 bit -> signed int conversion
+		adrs.SetTreeIndex(i*parameters.T + indices[i]) // Can the int(idx) give problems due to unsigned 64 bit -> signed int conversion
 		PKElement := hashFunc.PRF(SKseed, adrs)
 
 		AUTH := make([]byte, parameters.A*parameters.N)
 		for j := 0; j < parameters.A; j++ {
-			s := int(math.Floor(float64(idx)/math.Pow(2, float64(j)))) ^ 1
-			copy(AUTH[j * parameters.N:], fors_treehash(SKseed, i * parameters.T + s * int(math.Pow(2, float64(j))), j, PKseed, adrs))
+			s := int(math.Floor(float64(indices[i])/math.Pow(2, float64(j)))) ^ 1
+			test := fors_treehash(SKseed, i * parameters.T + s * int(math.Pow(2, float64(j))), j, PKseed, adrs)
+			copy(AUTH[j * parameters.N:], test)
 		}
 		SIG_FORS.forspkauth = append(SIG_FORS.forspkauth, &TreePKAUTH{PKElement, AUTH})
 	}
-	return SIG_FORS	
+	return SIG_FORS
 }
 
 func Fors_pkFromSig(SIG_FORS *FORSSignature, M []byte, PKseed []byte, adrs *address.ADRS) []byte {
 	hashFunc := tweakable.Sha256Tweak{}
 	root := make([]byte, parameters.K*parameters.N)
-
 	for i := 0; i < parameters.K; i++ {
 		// get next index
-		idx := binary.BigEndian.Uint64(M)
-		idx = (idx >> (parameters.K - 1 - i) * parameters.A) % parameters.T //CHANGE THIS
+		indices := message_to_indices(M)
 
 		// compute leaf
 		sk := SIG_FORS.GetSK(i)
 		adrs.SetTreeHeight(0)
-		adrs.SetTreeIndex(i * parameters.T + int(idx))
+		adrs.SetTreeIndex(i * parameters.T + indices[i])
 		node0 := hashFunc.F(tweakable.Robust, PKseed, adrs, sk)
+		fmt.Println(node0)
 		node1 := make([]byte, 0)
 		
 		// compute root from leaf and AUTH
 		auth := SIG_FORS.GetAUTH(i)
-		adrs.SetTreeIndex(i * parameters.T + int(idx))
+		adrs.SetTreeIndex(i * parameters.T + indices[i])
 		for j := 0; j < parameters.A; j++ {
 			adrs.SetTreeHeight(j+1)
-			if int(math.Floor(float64(idx) / math.Pow(2, float64(j)))) % 2 == 0 {
+			if int(math.Floor(float64(indices[i]) / math.Pow(2, float64(j)))) % 2 == 0 {
 				adrs.SetTreeIndex(adrs.GetTreeIndex() / 2)
 				node1 = hashFunc.H(tweakable.Robust, PKseed, adrs, node0, auth[j * parameters.N:(j+1)*parameters.N])
 			} else {
@@ -138,7 +154,7 @@ func Fors_pkFromSig(SIG_FORS *FORSSignature, M []byte, PKseed []byte, adrs *addr
 		}
 		copy(root[i * parameters.N:], node0)
 	}
-
+	fmt.Println(root)
 	forsPKadrs := adrs.Copy()
 	forsPKadrs.SetType(parameters.FORS_ROOTS)
 	forsPKadrs.SetKeyPairAddress(adrs.GetKeyPairAddress())
