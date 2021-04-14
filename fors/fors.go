@@ -75,7 +75,6 @@ func Fors_PKgen(SKseed []byte, PKseed []byte, adrs *address.ADRS) []byte {
 	}
 	forsPKadrs.SetType(parameters.FORS_ROOTS)
 	forsPKadrs.SetKeyPairAddress(adrs.GetKeyPairAddress())
-	fmt.Println(root)
 	pk := hashFunc.T_l(tweakable.Robust, PKseed, forsPKadrs, root)
 	
 	return pk
@@ -115,7 +114,14 @@ func Fors_sign(M []byte, SKseed []byte, PKseed []byte, adrs *address.ADRS) *FORS
 		AUTH := make([]byte, parameters.A*parameters.N)
 		for j := 0; j < parameters.A; j++ {
 			s := int(math.Floor(float64(indices[i])/math.Pow(2, float64(j)))) ^ 1
-			test := fors_treehash(SKseed, i * parameters.T + s * int(math.Pow(2, float64(j))), j, PKseed, adrs)
+			if(i == 27) {
+				fmt.Println("indices[i]")
+				fmt.Println(indices[i])
+				fmt.Println("s")
+				fmt.Println(s)
+			}
+			test := fors_treehash(SKseed, i * parameters.T + s * int(math.Pow(2, float64(j))), j, PKseed, adrs) // første 96 bytes er korrekte
+
 			copy(AUTH[j * parameters.N:], test)
 		}
 		SIG_FORS.forspkauth = append(SIG_FORS.forspkauth, &TreePKAUTH{PKElement, AUTH})
@@ -134,8 +140,8 @@ func Fors_pkFromSig(SIG_FORS *FORSSignature, M []byte, PKseed []byte, adrs *addr
 		sk := SIG_FORS.GetSK(i)
 		adrs.SetTreeHeight(0)
 		adrs.SetTreeIndex(i * parameters.T + indices[i])
+	
 		node0 := hashFunc.F(tweakable.Robust, PKseed, adrs, sk)
-		fmt.Println(node0)
 		node1 := make([]byte, 0)
 		
 		// compute root from leaf and AUTH
@@ -143,8 +149,10 @@ func Fors_pkFromSig(SIG_FORS *FORSSignature, M []byte, PKseed []byte, adrs *addr
 		adrs.SetTreeIndex(i * parameters.T + indices[i])
 		for j := 0; j < parameters.A; j++ {
 			adrs.SetTreeHeight(j+1)
+			
 			if int(math.Floor(float64(indices[i]) / math.Pow(2, float64(j)))) % 2 == 0 {
 				adrs.SetTreeIndex(adrs.GetTreeIndex() / 2)
+				
 				node1 = hashFunc.H(tweakable.Robust, PKseed, adrs, node0, auth[j * parameters.N:(j+1)*parameters.N])
 			} else {
 				adrs.SetTreeIndex((adrs.GetTreeIndex() - 1) / 2)
@@ -154,7 +162,6 @@ func Fors_pkFromSig(SIG_FORS *FORSSignature, M []byte, PKseed []byte, adrs *addr
 		}
 		copy(root[i * parameters.N:], node0)
 	}
-	fmt.Println(root)
 	forsPKadrs := adrs.Copy()
 	forsPKadrs.SetType(parameters.FORS_ROOTS)
 	forsPKadrs.SetKeyPairAddress(adrs.GetKeyPairAddress())

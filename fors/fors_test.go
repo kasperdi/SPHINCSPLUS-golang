@@ -12,32 +12,37 @@ import (
 
 func TestSha256n256fRobust(t *testing.T) {
 	msg := "Nola pustulata, the sharp-blotched nola, is a species of nolid moth in the family Nolidae."
-	tmp := make([]byte, 32)
+	PKseed := make([]byte, 32)
 	for i := 0; i < 32; i++ {
-		tmp[i] = byte(i);
+		PKseed[i] = byte(i);
 	}
 	SKseed := make([]byte, 32)
 
 	var adrs address.ADRS
 	adrs.SetType(parameters.FORS_TREE)
 
-	pk1 := Fors_PKgen(SKseed, tmp, &adrs)
+	pk1 := Fors_PKgen(SKseed, PKseed, &adrs)
+	fmt.Println(adrs)
 
 	msgAsBytes := []byte(msg)
 
-	signature := Fors_sign(msgAsBytes, SKseed, tmp, &adrs)
-	pkFromSig := Fors_pkFromSig(signature, msgAsBytes, tmp, &adrs)
+	signature := Fors_sign(msgAsBytes, SKseed, PKseed, &adrs)
+	pkFromSig := Fors_pkFromSig(signature, msgAsBytes, PKseed, &adrs)
 
 	pkFromRefImpl := "efcc07e6dcfa255faa8b8a9f79cf55eef7632bd26fe195c61db17e9f27981c4b"
 
+	fmt.Println(hex.EncodeToString(signature.GetSK(27)))
+	fmt.Println(hex.EncodeToString(signature.GetAUTH(27)))
 	//fmt.Println(hex.EncodeToString(signature.GetSK(15)))
+	fmt.Println("")
+	fmt.Println(adrs)
+
+	originalPKHex := hex.EncodeToString(pk1)
 
 	if(!bytes.Equal(pkFromSig, pk1)) {
-		t.Errorf("Verification of signed message failed, but was expected to succeed!")
+		t.Errorf("Expected PK: %s, but got PK: %s", originalPKHex, hex.EncodeToString(pkFromSig))
 	}
-	originalPKHex := hex.EncodeToString(pk1)
 	
-	fmt.Println(hex.EncodeToString(pkFromSig))
 	if(pkFromRefImpl != originalPKHex) {
 		t.Errorf("Expected PK: %s, but got PK: %s", pkFromRefImpl, originalPKHex)
 	}

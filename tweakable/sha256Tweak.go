@@ -46,7 +46,6 @@ func (h *Sha256Tweak) PRFmsg(SKprf []byte, OptRand []byte, M []byte) []byte {
 func (h *Sha256Tweak) F(variant string, PKseed []byte, adrs *address.ADRS, tmp []byte) []byte {
     M1 := make([]byte, len(tmp))
     compressedADRS := compressADRS(adrs)
-
     M1 = tmp
     if variant == Robust {
         bitmask := mgf1sha256(append(PKseed, compressedADRS...), len(tmp))

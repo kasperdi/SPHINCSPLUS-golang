@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"fmt"
 	"./hypertree"
+	"./address"
 )
 
 func main() {
@@ -24,6 +25,9 @@ func main() {
 	signature := hypertree.Ht_sign(message, SKseed, PKseed, 0, 0)
 
 	fmt.Println(hypertree.Ht_verify(message, signature, PKseed, 0, 0, PK))
+
+	adrs := new(address.ADRS)
+	adrs.SetTreeHeight(10)
 
 
 	
