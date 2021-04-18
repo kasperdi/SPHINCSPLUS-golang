@@ -1,33 +1,34 @@
 package main
 
 import (
-	"crypto/rand"
 	"fmt"
-	"./hypertree"
+	"encoding/hex"
+	"./parameters"
 	"./address"
+	"./fors"
 )
 
 func main() {
-	fmt.Println("PLACEHOLDER")
-	hypertree.Ht_PKgen(nil, nil)
-
-	message := make([]byte, 32)
-	rand.Read(message)
-	messageFake := make([]byte, 32)
-	rand.Read(messageFake)
-	SKseed := make([]byte, 32)
-	rand.Read(SKseed)
+	//msg := "Nola pustulata, the sharp-blotched nola, is a species of nolid moth in the family Nolidae."
 	PKseed := make([]byte, 32)
-	rand.Read(SKseed)
+	SKseed := make([]byte, 32)
+	for i := 0; i < 32; i++ {
+		PKseed[i] = byte(i);
+	}
 
-	PK := hypertree.Ht_PKgen(SKseed, PKseed)
+	var adrs address.ADRS
+	adrs.SetType(parameters.FORS_TREE)
 
-	signature := hypertree.Ht_sign(message, SKseed, PKseed, 0, 0)
 
-	fmt.Println(hypertree.Ht_verify(message, signature, PKseed, 0, 0, PK))
+	test := fors.Fors_treehash(SKseed, 14080, 3, PKseed, &adrs)
+	
 
-	adrs := new(address.ADRS)
-	adrs.SetTreeHeight(10)
+	//msgAsBytes := []byte(msg)
+
+	fmt.Println(test)
+	fmt.Println(hex.EncodeToString(test))
+
+
 
 
 	

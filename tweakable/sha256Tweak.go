@@ -46,11 +46,14 @@ func (h *Sha256Tweak) PRFmsg(SKprf []byte, OptRand []byte, M []byte) []byte {
 func (h *Sha256Tweak) F(variant string, PKseed []byte, adrs *address.ADRS, tmp []byte) []byte {
     M1 := make([]byte, len(tmp))
     compressedADRS := compressADRS(adrs)
-    M1 = tmp
+
     if variant == Robust {
         bitmask := mgf1sha256(append(PKseed, compressedADRS...), len(tmp))
-        M1 = xorBytes(M1, bitmask) 
+        M1 = xorBytes(tmp, bitmask) 
+    } else if variant == Simple {
+        M1 = tmp
     }
+    
 
     bytes := make([]byte, 64-parameters.N)
     
@@ -63,14 +66,15 @@ func (h *Sha256Tweak) F(variant string, PKseed []byte, adrs *address.ADRS, tmp [
 }
 
 // Tweakable hash function H
-func (h *Sha256Tweak) H(variant string, PKseed []byte, adrs *address.ADRS, tmp1 []byte, tmp2 []byte) []byte {
-    M1M2 := make([]byte, len(tmp1)+len(tmp2))
+func (h *Sha256Tweak) H(variant string, PKseed []byte, adrs *address.ADRS, tmp []byte) []byte {
+    M1M2 := make([]byte, len(tmp))
     compressedADRS := compressADRS(adrs)
 
-    M1M2 = append(tmp1, tmp2...)
     if variant == Robust {
-        bitmask := mgf1sha256(append(PKseed, compressedADRS...), len(tmp1)+len(tmp2))
-        M1M2 = xorBytes(M1M2, bitmask)
+        bitmask := mgf1sha256(append(PKseed, compressedADRS...), len(tmp))
+        M1M2 = xorBytes(tmp, bitmask)
+    } else if variant == Simple {
+        M1M2 = tmp
     }
 
     bytes := make([]byte, 64-parameters.N)
@@ -119,7 +123,7 @@ type ADRS struct {
  */
 
  // Compresses ADRS into 22 bytes
-func compressADRS(adrs *address.ADRS) []byte {
+func compressADRS(adrs *address.ADRS) []byte { // TODO: check if writing to buffer is faster than appending
     ADRSc := make([]byte, 0)
 
     typ := binary.BigEndian.Uint32(adrs.Type[:])

@@ -42,7 +42,7 @@ func treehash(SKseed []byte, startIndex int, targetNodeHeight int, PKseed []byte
 		
 		for (len(stack) > 0 && (stack.Peek().NodeHeight == adrs.GetTreeHeight())) {
 			adrs.SetTreeIndex((adrs.GetTreeIndex() - 1) / 2)
-			node = hashFunc.H(tweakable.Robust, PKseed, adrs, stack.Pop().Node, node)
+			node = hashFunc.H(tweakable.Robust, PKseed, adrs, append(stack.Pop().Node, node...))
 			adrs.SetTreeHeight(adrs.GetTreeHeight() + 1)
 		}
 		
@@ -94,10 +94,10 @@ func Xmss_pkFromSig(idx int, SIG_XMSS *XMSSSignature, M []byte, PKseed []byte, a
 		adrs.SetTreeHeight(k+1)
 		if int(math.Floor(float64(idx) / math.Pow(2, float64(k)))) % 2 == 0 {
 			adrs.SetTreeIndex(adrs.GetTreeIndex() / 2)
-			node1 = hashFunc.H(tweakable.Robust, PKseed, adrs, node0, AUTH[k * parameters.N:(k+1)*parameters.N])
+			node1 = hashFunc.H(tweakable.Robust, PKseed, adrs, append(node0, AUTH[k * parameters.N:(k+1)*parameters.N]...))
 		} else {
 			adrs.SetTreeIndex((adrs.GetTreeIndex() - 1) / 2)
-			node1 = hashFunc.H(tweakable.Robust, PKseed, adrs, AUTH[k * parameters.N:(k+1)*parameters.N], node0)
+			node1 = hashFunc.H(tweakable.Robust, PKseed, adrs, append(AUTH[k * parameters.N:(k+1)*parameters.N], node0...))
 		}
 		node0 = node1
 	}

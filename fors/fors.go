@@ -6,11 +6,12 @@ import (
 	"../tweakable"
 	"../address"
 	"../parameters"
+	"encoding/hex"
 	"fmt"
 )
 
 type FORSSignature struct {
-	forspkauth []*TreePKAUTH
+	Forspkauth []*TreePKAUTH
 }
 
 type TreePKAUTH struct {
@@ -19,11 +20,11 @@ type TreePKAUTH struct {
 }
 
 func (s *FORSSignature) GetSK(index int) []byte {
-	return s.forspkauth[index].privateKeyValue
+	return s.Forspkauth[index].privateKeyValue
 }
 
 func (s *FORSSignature) GetAUTH(index int) []byte {
-	return s.forspkauth[index].AUTH
+	return s.Forspkauth[index].AUTH
 }
 
 
@@ -36,7 +37,7 @@ func Fors_SKgen(SKseed []byte, adrs *address.ADRS, idx int) []byte {
 	return sk
 }
 
-func fors_treehash(SKseed []byte, startIndex int, targetNodeHeight int, PKseed []byte, adrs *address.ADRS) []byte {
+func Fors_treehash(SKseed []byte, startIndex int, targetNodeHeight int, PKseed []byte, adrs *address.ADRS) []byte {
 	if startIndex % (1 << targetNodeHeight) != 0 {
 		return nil
 	}
@@ -54,7 +55,7 @@ func fors_treehash(SKseed []byte, startIndex int, targetNodeHeight int, PKseed [
 		
 		for (len(stack) > 0 && (stack.Peek().NodeHeight == adrs.GetTreeHeight())) {
 			adrs.SetTreeIndex((adrs.GetTreeIndex() - 1) / 2)
-			node = hashFunc.H(tweakable.Robust, PKseed, adrs, stack.Pop().Node, node)
+			node = hashFunc.H(tweakable.Robust, PKseed, adrs, append(stack.Pop().Node, node...))
 			adrs.SetTreeHeight(adrs.GetTreeHeight() + 1)
 		}
 		
@@ -71,7 +72,7 @@ func Fors_PKgen(SKseed []byte, PKseed []byte, adrs *address.ADRS) []byte {
 	hashFunc := tweakable.Sha256Tweak{}
 
 	for i := 0; i < parameters.K; i++ {
-		copy(root[i * parameters.N:], fors_treehash(SKseed, i*parameters.T, parameters.A, PKseed, adrs))
+		copy(root[i * parameters.N:], Fors_treehash(SKseed, i*parameters.T, parameters.A, PKseed, adrs))
 	}
 	forsPKadrs.SetType(parameters.FORS_ROOTS)
 	forsPKadrs.SetKeyPairAddress(adrs.GetKeyPairAddress())
@@ -114,17 +115,12 @@ func Fors_sign(M []byte, SKseed []byte, PKseed []byte, adrs *address.ADRS) *FORS
 		AUTH := make([]byte, parameters.A*parameters.N)
 		for j := 0; j < parameters.A; j++ {
 			s := int(math.Floor(float64(indices[i])/math.Pow(2, float64(j)))) ^ 1
-			if(i == 27) {
-				fmt.Println("indices[i]")
-				fmt.Println(indices[i])
-				fmt.Println("s")
-				fmt.Println(s)
-			}
-			test := fors_treehash(SKseed, i * parameters.T + s * int(math.Pow(2, float64(j))), j, PKseed, adrs) // første 96 bytes er korrekte
+			test := Fors_treehash(SKseed, i * parameters.T + s * int(math.Pow(2, float64(j))), j, PKseed, adrs)
 
 			copy(AUTH[j * parameters.N:], test)
 		}
-		SIG_FORS.forspkauth = append(SIG_FORS.forspkauth, &TreePKAUTH{PKElement, AUTH})
+		
+		SIG_FORS.Forspkauth = append(SIG_FORS.Forspkauth, &TreePKAUTH{PKElement, AUTH})
 	}
 	return SIG_FORS
 }
@@ -146,22 +142,30 @@ func Fors_pkFromSig(SIG_FORS *FORSSignature, M []byte, PKseed []byte, adrs *addr
 		
 		// compute root from leaf and AUTH
 		auth := SIG_FORS.GetAUTH(i)
+		
 		adrs.SetTreeIndex(i * parameters.T + indices[i])
 		for j := 0; j < parameters.A; j++ {
 			adrs.SetTreeHeight(j+1)
 			
+			bytesToHash := make([]byte, parameters.N + len(node0)) // TODO: Could be cleaned by using a byte buffer, but is it faster?
+			copy(bytesToHash, auth[j * parameters.N:(j+1)*parameters.N])
+			copy(bytesToHash[parameters.N:], node0)
+			
 			if int(math.Floor(float64(indices[i]) / math.Pow(2, float64(j)))) % 2 == 0 {
 				adrs.SetTreeIndex(adrs.GetTreeIndex() / 2)
 				
-				node1 = hashFunc.H(tweakable.Robust, PKseed, adrs, node0, auth[j * parameters.N:(j+1)*parameters.N])
+				node1 = hashFunc.H(tweakable.Robust, PKseed, adrs, bytesToHash)
+				
 			} else {
 				adrs.SetTreeIndex((adrs.GetTreeIndex() - 1) / 2)
-				node1 = hashFunc.H(tweakable.Robust, PKseed, adrs, auth[j * parameters.N:(j+1)*parameters.N], node0)
+				node1 = hashFunc.H(tweakable.Robust, PKseed, adrs, bytesToHash)
 			}
+			
 			node0 = node1
 		}
 		copy(root[i * parameters.N:], node0)
 	}
+	fmt.Println(hex.EncodeToString(root))
 	forsPKadrs := adrs.Copy()
 	forsPKadrs.SetType(parameters.FORS_ROOTS)
 	forsPKadrs.SetKeyPairAddress(adrs.GetKeyPairAddress())

@@ -45,7 +45,7 @@ func (s *SPHINCS_SIG) GetSIG_HT() *hypertree.HTSignature {
 }
 
 
-func spx_keygen() (*SPHINCS_SK, *SPHINCS_PK) {
+func Spx_keygen() (*SPHINCS_SK, *SPHINCS_PK) {
 
 	SKseed := make([]byte, parameters.N)
 	rand.Read(SKseed)
@@ -71,7 +71,7 @@ func spx_keygen() (*SPHINCS_SK, *SPHINCS_PK) {
 	return sk, pk
 }
 
-func spx_sign(M []byte, SK SPHINCS_SK) *SPHINCS_SIG {
+func Spx_sign(M []byte, SK SPHINCS_SK) *SPHINCS_SIG {
 	// init
 	adrs := new(address.ADRS)
 
@@ -116,7 +116,7 @@ func spx_sign(M []byte, SK SPHINCS_SK) *SPHINCS_SIG {
 	return SIG
 }
 
-func spx_verify(M []byte, SIG SPHINCS_SIG, PK SPHINCS_PK) bool {
+func Spx_verify(M []byte, SIG SPHINCS_SIG, PK SPHINCS_PK) bool {
 	// init
 	adrs := new(address.ADRS)
 	R := SIG.GetR()

@@ -7,7 +7,6 @@ import (
 	"encoding/hex"
 	"../address"
 	"../parameters"
-	"fmt"
 )
 
 func TestSha256n256fRobust(t *testing.T) {
@@ -22,7 +21,7 @@ func TestSha256n256fRobust(t *testing.T) {
 	adrs.SetType(parameters.FORS_TREE)
 
 	pk1 := Fors_PKgen(SKseed, PKseed, &adrs)
-	fmt.Println(adrs)
+	/* fmt.Println(adrs) */
 
 	msgAsBytes := []byte(msg)
 
@@ -31,11 +30,11 @@ func TestSha256n256fRobust(t *testing.T) {
 
 	pkFromRefImpl := "efcc07e6dcfa255faa8b8a9f79cf55eef7632bd26fe195c61db17e9f27981c4b"
 
-	fmt.Println(hex.EncodeToString(signature.GetSK(27)))
-	fmt.Println(hex.EncodeToString(signature.GetAUTH(27)))
-	//fmt.Println(hex.EncodeToString(signature.GetSK(15)))
-	fmt.Println("")
-	fmt.Println(adrs)
+
+	/* for i := 0; i < parameters.K; i++ {
+		fmt.Print(hex.EncodeToString(signature.GetSK(i)))
+		fmt.Print(hex.EncodeToString(signature.GetAUTH(i)))
+	} */
 
 	originalPKHex := hex.EncodeToString(pk1)
 
