@@ -35,9 +35,11 @@ func (adrs *ADRS) SetLayerAddress(a int) { //uint32 eller int
     adrs.LayerAddress = layerAddress
 }
 
-func (adrs *ADRS) SetTreeAddress(a int) { //uint32 eller int
-	var treeAddress [12]byte
-	copy(treeAddress[:], util.ToByte(uint32(a), 12))
+func (adrs *ADRS) SetTreeAddress(a int) { //Allow 12 byte ints (big.Int)
+	var treeAddress [12]byte //This is not very clean
+	treeAddressBuffer := make([]byte, 12)
+	binary.BigEndian.PutUint64(treeAddressBuffer, uint64(a))
+	copy(treeAddress[:], treeAddressBuffer)
     adrs.TreeAddress = treeAddress
 }
 
