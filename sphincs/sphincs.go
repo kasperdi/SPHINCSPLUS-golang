@@ -86,17 +86,14 @@ func Spx_sign(M []byte, SK SPHINCS_SK) *SPHINCS_SIG {
 	SIG := new(SPHINCS_SIG)
 	SIG.R = R
 
+	// compute message digest and index
 	digest := hashFunc.Hmsg(R, SK.PKseed, SK.PKroot, M)
 	tmp_md_bytes := int(math.Floor((parameters.K * parameters.A + 7) / 8))
-
-	tmp_md := digest //These two lines could probably be simplified
-	if(tmp_md_bytes < len(digest)) {
-		tmp_md = digest[:tmp_md_bytes]
-	}
-	
 	tmp_idx_tree_bytes := int(math.Floor((parameters.H - parameters.H / parameters.D + 7) / 8))
-	tmp_idx_tree := digest[tmp_md_bytes:tmp_idx_tree_bytes]
 	tmp_idx_leaf_bytes := int(math.Floor(parameters.H / parameters.D + 7) / 8)
+
+	tmp_md := digest[:tmp_md_bytes]
+	tmp_idx_tree := digest[tmp_md_bytes:tmp_idx_tree_bytes]
 	tmp_idx_leaf := digest[tmp_idx_tree_bytes:tmp_idx_leaf_bytes]
 
 	md := binary.BigEndian.Uint32(tmp_md) // Should this be changed??? If k*a < 32, then we should not take all bits
