@@ -8,8 +8,8 @@ TODO list
     - [X] SHA-256 tweakable hash function
     - [X] WOTS+
     - [X] XMSS
-    - [ ] HyperTree
-    - [ ] FORS+
+    - [X] HyperTree
+    - [X] FORS+
     - [ ] SPHINCS+
     - [ ] Haraka tweakable hash function
 

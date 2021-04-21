@@ -1,13 +1,14 @@
 package sphincs
 
-/* import (
+import (
 	"testing"
 	"encoding/hex"
 	"fmt"
+	"../parameters"
 )
 
 func TestSha256n256fRobust(t *testing.T) {
-	pk := new(SPHINCS_PK)
+	//pk := new(SPHINCS_PK)
 	sk := new(SPHINCS_SK)
 
 	text := "Galinsoga subdiscoidea is a rare"
@@ -17,18 +18,15 @@ func TestSha256n256fRobust(t *testing.T) {
 
 
 	fmt.Println(hex.EncodeToString(signature.R))
-	for _, forsSig := range signature.SIG_FORS.Forspkauth {
-		fmt.Println(hex.EncodeToString(forsSig.Forspkauth.privateKeyValue))
-		fmt.Println(hex.EncodeToString(forsSig.Forspkauth.AUTH))
+	for i := 0; i < parameters.K; i++ {
+		fmt.Println(hex.EncodeToString(signature.SIG_FORS.GetSK(i)))
+		fmt.Println(hex.EncodeToString(signature.SIG_FORS.GetAUTH(i)))
 	}
 
-	for _, htSig := range signature.SIG_HT.XMSSSignatures {
-		for _, xmssSig := range htSig.XMSSSignatures {
-			fmt.Println(hex.EncodeToString(xmssSig.wotsSignature))
-			fmt.Println(hex.EncodeToString(xmssSig.AUTH))
-		}
-		
+	for _, xmssSig := range signature.SIG_HT.XMSSSignatures {
+		fmt.Println(hex.EncodeToString(xmssSig.GetWOTSSig()))
+		fmt.Println(hex.EncodeToString(xmssSig.GetXMSSAUTH()))
 	}
 
 
-} */
+}

@@ -6,8 +6,7 @@ import (
 	"../tweakable"
 	"../address"
 	"../parameters"
-	"encoding/hex"
-	"fmt"
+	/* "encoding/hex" */
 )
 
 type FORSSignature struct {
@@ -44,12 +43,13 @@ func Fors_treehash(SKseed []byte, startIndex int, targetNodeHeight int, PKseed [
 
 	hashFunc := tweakable.Sha256Tweak{}
 	stack := util.Stack{}
-
+	
 	for i := 0; i < int(math.Pow(2, float64(targetNodeHeight))); i++ {
 		adrs.SetTreeHeight(0)
 		adrs.SetTreeIndex(startIndex + i)
 		sk := hashFunc.PRF(SKseed, adrs)
 		node := hashFunc.F(tweakable.Robust, PKseed, adrs, sk)
+		
 		adrs.SetTreeHeight(1)
 		adrs.SetTreeIndex(startIndex + i)
 		
@@ -146,18 +146,23 @@ func Fors_pkFromSig(SIG_FORS *FORSSignature, M []byte, PKseed []byte, adrs *addr
 		adrs.SetTreeIndex(i * parameters.T + indices[i])
 		for j := 0; j < parameters.A; j++ {
 			adrs.SetTreeHeight(j+1)
-			
-			bytesToHash := make([]byte, parameters.N + len(node0)) // TODO: Could be cleaned by using a byte buffer, but is it faster?
-			copy(bytesToHash, auth[j * parameters.N:(j+1)*parameters.N])
-			copy(bytesToHash[parameters.N:], node0)
-			
+
 			if int(math.Floor(float64(indices[i]) / math.Pow(2, float64(j)))) % 2 == 0 {
 				adrs.SetTreeIndex(adrs.GetTreeIndex() / 2)
+
+				bytesToHash := make([]byte, parameters.N + len(node0)) // TODO: Could be cleaned by using a byte buffer, but is it faster?
+				copy(bytesToHash, node0)
+				copy(bytesToHash[parameters.N:], auth[j * parameters.N:(j+1)*parameters.N])
 				
 				node1 = hashFunc.H(tweakable.Robust, PKseed, adrs, bytesToHash)
 				
 			} else {
 				adrs.SetTreeIndex((adrs.GetTreeIndex() - 1) / 2)
+
+				bytesToHash := make([]byte, parameters.N + len(node0)) // TODO: Could be cleaned by using a byte buffer, but is it faster?
+				copy(bytesToHash, auth[j * parameters.N:(j+1)*parameters.N])
+				copy(bytesToHash[parameters.N:], node0)
+
 				node1 = hashFunc.H(tweakable.Robust, PKseed, adrs, bytesToHash)
 			}
 			
@@ -165,7 +170,6 @@ func Fors_pkFromSig(SIG_FORS *FORSSignature, M []byte, PKseed []byte, adrs *addr
 		}
 		copy(root[i * parameters.N:], node0)
 	}
-	fmt.Println(hex.EncodeToString(root))
 	forsPKadrs := adrs.Copy()
 	forsPKadrs.SetType(parameters.FORS_ROOTS)
 	forsPKadrs.SetKeyPairAddress(adrs.GetKeyPairAddress())
