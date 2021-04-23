@@ -94,10 +94,20 @@ func Xmss_pkFromSig(idx int, SIG_XMSS *XMSSSignature, M []byte, PKseed []byte, a
 		adrs.SetTreeHeight(k+1)
 		if int(math.Floor(float64(idx) / math.Pow(2, float64(k)))) % 2 == 0 {
 			adrs.SetTreeIndex(adrs.GetTreeIndex() / 2)
-			node1 = hashFunc.H(tweakable.Robust, PKseed, adrs, append(node0, AUTH[k * parameters.N:(k+1)*parameters.N]...))
+
+			bytesToHash := make([]byte, parameters.N + len(node0)) // TODO: Could be cleaned by using a byte buffer, but is it faster?
+			copy(bytesToHash, node0)
+			copy(bytesToHash[parameters.N:], AUTH[k * parameters.N:(k+1)*parameters.N])
+
+			node1 = hashFunc.H(tweakable.Robust, PKseed, adrs, bytesToHash)
 		} else {
 			adrs.SetTreeIndex((adrs.GetTreeIndex() - 1) / 2)
-			node1 = hashFunc.H(tweakable.Robust, PKseed, adrs, append(AUTH[k * parameters.N:(k+1)*parameters.N], node0...))
+
+			bytesToHash := make([]byte, parameters.N + len(node0)) // TODO: Could be cleaned by using a byte buffer, but is it faster?
+			copy(bytesToHash, AUTH[k * parameters.N:(k+1)*parameters.N])
+			copy(bytesToHash[parameters.N:], node0)
+
+			node1 = hashFunc.H(tweakable.Robust, PKseed, adrs, bytesToHash)
 		}
 		node0 = node1
 	}

@@ -1,6 +1,7 @@
 package util
 
 import "encoding/binary"
+import "bytes"
 import "math"
 
 // For x and y non-negative intergers, toByte(x,y) returns the y-byte bytearray 
@@ -19,6 +20,13 @@ func ToByte2(in int, outlen int) []byte {
         in = in >> 8;
     }
 	return out
+}
+
+func BytesToUint64(in []byte) uint64 {
+	var result uint64
+    buffer := bytes.NewBuffer(in)
+    binary.Read(buffer, binary.BigEndian, &result)
+    return result
 }
 
 

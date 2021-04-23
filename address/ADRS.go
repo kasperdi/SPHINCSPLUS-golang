@@ -47,6 +47,12 @@ func (adrs *ADRS) SetType(a int) { //uint32 eller int
 	var typ [4]byte
 	copy(typ[:], util.ToByte(uint32(a), 4))
     adrs.Type = typ
+	//Set the three last words to 0 as described in section 2.7.3
+	adrs.SetKeyPairAddress(0)
+	adrs.SetChainAddress(0)
+	adrs.SetHashAddress(0)
+	adrs.SetTreeHeight(0)
+	adrs.SetTreeIndex(0)
 }
 
 func (adrs *ADRS) SetKeyPairAddress(a int) { //uint32 eller int
@@ -96,5 +102,11 @@ func (adrs *ADRS) GetTreeHeight() int { //uint32 eller int
 	treeHeightBytes := adrs.TreeHeight[:]
 	treeHeightUint32 := binary.BigEndian.Uint32(treeHeightBytes)
 	return int(treeHeightUint32)
+}
+
+func (adrs *ADRS) GetType() int { //uint32 eller int
+	typeBytes := adrs.Type[:]
+	typeUint32 := binary.BigEndian.Uint32(typeBytes)
+	return int(typeUint32)
 }
 

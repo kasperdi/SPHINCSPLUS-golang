@@ -3,7 +3,7 @@ package tweakable
 import (
     "crypto/sha256"
     "crypto/hmac"
-    "encoding/binary"
+    "math"
     "../util"
     "../address"
     "../parameters"
@@ -15,13 +15,19 @@ type Sha256Tweak struct {
 
 // Tweakable hash function Hmsg
 func (h *Sha256Tweak) Hmsg(R []byte, PKseed []byte, PKroot []byte, M []byte) []byte {
+    md_len := int(math.Floor((parameters.K * parameters.LogT + 7) / 8))
+    idx_tree_len := int(math.Floor((parameters.H - parameters.H / parameters.D + 7) / 8))
+    idx_leaf_len := int(math.Floor(parameters.H / parameters.D + 7) / 8)
+
+    m := md_len + idx_tree_len + idx_leaf_len
+
     hash := sha256.New()
     hash.Write(R)
     hash.Write(PKseed)
     hash.Write(PKroot)
     hash.Write(M)
     hashedConc := hash.Sum(nil)
-    bitmask := mgf1sha256(hashedConc, 32)
+    bitmask := mgf1sha256(hashedConc, m)
     return bitmask
 }
 
@@ -74,30 +80,15 @@ func (h *Sha256Tweak) T_l(variant string, PKseed []byte, adrs *address.ADRS , tm
     return h.F(variant, PKseed, adrs, tmp)
 }
 
-/* ADRS FORMAT
-type ADRS struct {
-    LayerAddress [4]byte
-	TreeAddress [12]byte
-	Type int32
-	KeyPairAddress [4]byte
-	TreeHeight int32
-	TreeIndex int32
-	ChainAddress [4]byte
-	HashAddress int32
-}
- */
-
  // Compresses ADRS into 22 bytes
 func compressADRS(adrs *address.ADRS) []byte { // TODO: check if writing to buffer is faster than appending
     ADRSc := make([]byte, 0)
-
-    typ := binary.BigEndian.Uint32(adrs.Type[:])
 
     ADRSc = append(ADRSc, adrs.LayerAddress[3:4]...)
     ADRSc = append(ADRSc, adrs.TreeAddress[4:12]...)
     ADRSc = append(ADRSc, adrs.Type[3:4]...)
 
-    switch typ {
+    switch adrs.GetType() {
     case parameters.WOTS_HASH:
         ADRSc = append(ADRSc, adrs.KeyPairAddress[:]...)
         ADRSc = append(ADRSc, adrs.ChainAddress[:]...)
