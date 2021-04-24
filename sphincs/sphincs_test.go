@@ -5,28 +5,21 @@ import (
 	"encoding/hex"
 	"../parameters"
 	"fmt"
-	"../hypertree"
 )
 
 func TestSha256n256fRobust(t *testing.T) {
 	//sk, pk := Spx_keygen()
 	
-	skseed, _ := hex.DecodeString("000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f")
+	//skseed, _ := hex.DecodeString("00020406080a0c0e10121416181a1c1e20222426282a2c2e30323436383a3c3e")
 	pk := new(SPHINCS_PK)
 	pk.PKseed = make([]byte, parameters.N)
 	sk := new(SPHINCS_SK)
 	sk.PKseed = make([]byte, parameters.N)
-	sk.SKseed = skseed
+	sk.SKseed = make([]byte, parameters.N)
 	sk.SKprf = make([]byte, parameters.N)
 
-	test := hypertree.Ht_PKgen(sk.SKseed, sk.PKseed)
-
-	pk.PKroot = test
-	sk.PKroot = test
-
-
-	fmt.Println(hex.EncodeToString(test))
-	
+	pk.PKroot = make([]byte, parameters.N)
+	sk.PKroot = make([]byte, parameters.N)
 
 	text := "Galinsoga subdiscoidea is a rare"
 	bytesToSign := []byte(text)
@@ -51,5 +44,5 @@ func TestSha256n256fRobust(t *testing.T) {
 
 	fmt.Println("")
 
-
+	t.Errorf("Verification failed, but was expected to succeed")
 }
