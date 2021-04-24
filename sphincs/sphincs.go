@@ -9,7 +9,9 @@ import (
 	"../hypertree"
 	"../fors"
 	"../tweakable"
+	"encoding/hex"
 	"fmt"
+	"math/big"
 
 )
 
@@ -71,7 +73,7 @@ func Spx_keygen() (*SPHINCS_SK, *SPHINCS_PK) {
 	return sk, pk
 }
 
-func Spx_sign(M []byte, SK SPHINCS_SK) *SPHINCS_SIG {
+func Spx_sign(M []byte, SK *SPHINCS_SK) *SPHINCS_SIG {
 	// init
 	adrs := new(address.ADRS)
 
@@ -83,6 +85,9 @@ func Spx_sign(M []byte, SK SPHINCS_SK) *SPHINCS_SIG {
 
 	hashFunc := tweakable.Sha256Tweak{}
 	R := hashFunc.PRFmsg(SK.SKprf, opt, M)
+
+	fmt.Println(hex.EncodeToString(R))
+
 	SIG := new(SPHINCS_SIG)
 	SIG.R = R
 
@@ -96,11 +101,13 @@ func Spx_sign(M []byte, SK SPHINCS_SK) *SPHINCS_SIG {
 	tmp_idx_tree := digest[tmp_md_bytes:(tmp_md_bytes + tmp_idx_tree_bytes)]
 	tmp_idx_leaf := digest[(tmp_md_bytes + tmp_idx_tree_bytes):(tmp_md_bytes + tmp_idx_tree_bytes + tmp_idx_leaf_bytes)]
 
-	fmt.Println(tmp_idx_leaf)
+	//fmt.Println(tmp_md)
+	//fmt.Println(util.BytesToUint64(tmp_md))
 
-	md := int(util.BytesToUint64(tmp_md) >> (tmp_md_bytes * 8 - (parameters.K * parameters.A))) // Should this be changed??? If k*a < 32, then we should not take all bits
-	idx_tree := int(util.BytesToUint64(tmp_idx_tree) >> (tmp_idx_tree_bytes * 8 - (parameters.H - parameters.H / parameters.D))) // Can give problems, as treaddress needs to support 12 bytes
-	idx_leaf := int(util.BytesToUint64(tmp_idx_leaf) >> (tmp_idx_leaf_bytes * 8 - (parameters.H / parameters.D)))
+
+	md := new(big.Int).SetBytes(tmp_md).Bytes()//new(big.Int).Rsh(new(big.Int).SetBytes(tmp_md), uint(tmp_md_bytes*8 - (parameters.K * parameters.A))).Bytes()  // >> (tmp_md_bytes * 8 - (parameters.K * parameters.A)))
+	idx_tree := int(util.BytesToUint64(tmp_idx_tree) & (math.MaxUint64 >> (64 - (parameters.H - parameters.H / parameters.D)))) // Can give problems, as treaddress needs to support 12 bytes
+	idx_leaf := int(util.BytesToUint32(tmp_idx_leaf) & (math.MaxUint32 >> (32 - parameters.H / parameters.D)))//>> (tmp_idx_leaf_bytes * 8 - (parameters.H / parameters.D)))
 
 	// FORS sign
 	adrs.SetLayerAddress(0)
@@ -108,10 +115,11 @@ func Spx_sign(M []byte, SK SPHINCS_SK) *SPHINCS_SIG {
 	adrs.SetType(parameters.FORS_TREE)
 	adrs.SetKeyPairAddress(idx_leaf)
 
-	SIG.SIG_FORS = fors.Fors_sign(util.ToByte2(md, tmp_md_bytes), SK.SKseed, SK.PKseed, adrs)
+	SIG.SIG_FORS = fors.Fors_sign(md, SK.SKseed, SK.PKseed, adrs)
 
 	// get FORS public key
-	PK_FORS := fors.Fors_pkFromSig(SIG.SIG_FORS, util.ToByte2(md, tmp_md_bytes), SK.PKseed, adrs)
+	PK_FORS := fors.Fors_pkFromSig(SIG.SIG_FORS, md, SK.PKseed, adrs)
+	fmt.Println(PK_FORS)
 
 	// sign FORS public key with HT
 	adrs.SetType(parameters.TREE)
@@ -120,7 +128,7 @@ func Spx_sign(M []byte, SK SPHINCS_SK) *SPHINCS_SIG {
 	return SIG
 }
 
-func Spx_verify(M []byte, SIG SPHINCS_SIG, PK SPHINCS_PK) bool {
+func Spx_verify(M []byte, SIG *SPHINCS_SIG, PK *SPHINCS_PK) bool {
 	// init
 	adrs := new(address.ADRS)
 	hashFunc := tweakable.Sha256Tweak{}
@@ -138,9 +146,9 @@ func Spx_verify(M []byte, SIG SPHINCS_SIG, PK SPHINCS_PK) bool {
 	tmp_idx_tree := digest[tmp_md_bytes:(tmp_md_bytes + tmp_idx_tree_bytes)]
 	tmp_idx_leaf := digest[(tmp_md_bytes + tmp_idx_tree_bytes):(tmp_md_bytes + tmp_idx_tree_bytes + tmp_idx_leaf_bytes)]
 
-	md := int(util.BytesToUint64(tmp_md) >> (tmp_md_bytes * 8 - (parameters.K * parameters.A))) // Should this be changed??? If k*a < 32, then we should not take all bits
-	idx_tree := int(util.BytesToUint64(tmp_idx_tree) >> (tmp_idx_tree_bytes * 8 - (parameters.H - parameters.H / parameters.D))) // Can give problems, as treaddress needs to support 12 bytes
-	idx_leaf := int(util.BytesToUint64(tmp_idx_leaf) >> (tmp_idx_leaf_bytes * 8 - (parameters.H / parameters.D)))
+	md := new(big.Int).SetBytes(tmp_md).Bytes()//new(big.Int).Rsh(new(big.Int).SetBytes(tmp_md), uint(tmp_md_bytes*8 - (parameters.K * parameters.A))).Bytes()  // >> (tmp_md_bytes * 8 - (parameters.K * parameters.A)))
+	idx_tree := int(util.BytesToUint64(tmp_idx_tree) & (math.MaxUint64 >> (64 - (parameters.H - parameters.H / parameters.D)))) // Can give problems, as treaddress needs to support 12 bytes
+	idx_leaf := int(util.BytesToUint32(tmp_idx_leaf) & (math.MaxUint32 >> (32 - parameters.H / parameters.D)))//>> (tmp_idx_leaf_bytes * 8 - (parameters.H / parameters.D)))
 	
 	// compute FORS public key
 	adrs.SetLayerAddress(0)
@@ -148,7 +156,8 @@ func Spx_verify(M []byte, SIG SPHINCS_SIG, PK SPHINCS_PK) bool {
 	adrs.SetType(parameters.FORS_TREE)
 	adrs.SetKeyPairAddress(idx_leaf)
 
-	PK_FORS := fors.Fors_pkFromSig(SIG_FORS, util.ToByte2(md, tmp_md_bytes), PK.PKseed, adrs)
+	PK_FORS := fors.Fors_pkFromSig(SIG_FORS, md, PK.PKseed, adrs)
+	fmt.Println(PK_FORS)
 
 	// verify HT signature
 	adrs.SetType(parameters.TREE)

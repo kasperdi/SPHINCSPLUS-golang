@@ -1,8 +1,9 @@
 package util
 
 import "encoding/binary"
-import "bytes"
+/* import "bytes" */
 import "math"
+/* import "fmt" */
 
 // For x and y non-negative intergers, toByte(x,y) returns the y-byte bytearray 
 // containing the binary representation of x in big-endian byte-order.
@@ -23,10 +24,21 @@ func ToByte2(in int, outlen int) []byte {
 }
 
 func BytesToUint64(in []byte) uint64 {
-	var result uint64
-    buffer := bytes.NewBuffer(in)
-    binary.Read(buffer, binary.BigEndian, &result)
-    return result
+	res := uint64(0)
+
+	for i := 0; i < len(in); i++ {
+		res = res | (uint64(in[i]) << (8*(len(in) - 1 - i)))
+	}
+	return res;
+}
+
+func BytesToUint32(in []byte) uint32 {
+	res := uint32(0)
+
+	for i := 0; i < len(in); i++ {
+		res = res | (uint32(in[i]) << (8*(len(in) - 1 - i)))
+	}
+	return res;
 }
 
 
