@@ -3,6 +3,7 @@ package sphincs
 import (
 	"testing"
 	"encoding/hex"
+	//"crypto/rand"
 	"../parameters"
 	"fmt"
 )
@@ -43,6 +44,23 @@ func TestSha256n256fRobust(t *testing.T) {
 	}
 
 	fmt.Println("")
+}
 
-	t.Errorf("Verification failed, but was expected to succeed")
+func TestSignAndVerify(t *testing.T) {
+	for i := 1; i < 10; i++ {
+
+		/* message := make([]byte, parameters.N)
+		rand.Read(message) */
+
+		text := "Galinsoga subdiscoidea is a rare"
+		message := []byte(text)
+
+		sk, pk := Spx_keygen()
+		signature := Spx_sign(message, sk)
+
+		if(!Spx_verify(message, signature, pk)) {
+			t.Errorf("Verification failed, but was expected to succeed")
+		}
+	}
+	
 }
