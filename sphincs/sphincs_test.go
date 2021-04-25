@@ -5,22 +5,28 @@ import (
 	"encoding/hex"
 	//"crypto/rand"
 	"../parameters"
+	"../hypertree"
 	"fmt"
 )
 
 func TestSha256n256fRobust(t *testing.T) {
 	//sk, pk := Spx_keygen()
 	
-	//skseed, _ := hex.DecodeString("00020406080a0c0e10121416181a1c1e20222426282a2c2e30323436383a3c3e")
+	skprf, _ := hex.DecodeString("47616c696e736f676120737562646973636f6964656120697320612072617265")
+
 	pk := new(SPHINCS_PK)
 	pk.PKseed = make([]byte, parameters.N)
 	sk := new(SPHINCS_SK)
 	sk.PKseed = make([]byte, parameters.N)
 	sk.SKseed = make([]byte, parameters.N)
-	sk.SKprf = make([]byte, parameters.N)
+	sk.SKprf = skprf
 
-	pk.PKroot = make([]byte, parameters.N)
-	sk.PKroot = make([]byte, parameters.N)
+	root := hypertree.Ht_PKgen(sk.SKseed, sk.PKseed)
+
+	fmt.Println(hex.EncodeToString(root))
+
+	pk.PKroot = root
+	sk.PKroot = root
 
 	text := "Galinsoga subdiscoidea is a rare"
 	bytesToSign := []byte(text)
@@ -44,6 +50,8 @@ func TestSha256n256fRobust(t *testing.T) {
 	}
 
 	fmt.Println("")
+
+	t.Errorf("Verification failed, but was expected to succeed")
 }
 
 func TestSignAndVerify(t *testing.T) {
@@ -59,6 +67,8 @@ func TestSignAndVerify(t *testing.T) {
 		signature := Spx_sign(message, sk)
 
 		if(!Spx_verify(message, signature, pk)) {
+			fmt.Println(sk)
+			fmt.Println(pk)
 			t.Errorf("Verification failed, but was expected to succeed")
 		}
 	}

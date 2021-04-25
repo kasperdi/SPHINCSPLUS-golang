@@ -10,8 +10,9 @@ TODO list
     - [X] XMSS
     - [X] HyperTree
     - [X] FORS+
-    - [ ] SPHINCS+
+    - [X] SPHINCS+
     - [ ] Haraka tweakable hash function
+    - [ ] Additional testing
 
 - [ ] Benchmarking
     - [ ] SPHINCS<sup>+</sup>-SHA-256

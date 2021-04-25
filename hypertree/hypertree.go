@@ -25,7 +25,7 @@ func Ht_PKgen(SKseed []byte, PKseed []byte) []byte {
 	return root
 }
 
-func Ht_sign(M []byte, SKseed []byte, PKseed []byte, idx_tree int, idx_leaf int) *HTSignature {
+func Ht_sign(M []byte, SKseed []byte, PKseed []byte, idx_tree uint64, idx_leaf int) *HTSignature {
 	// init
 	adrs := new(address.ADRS)
 	
@@ -38,7 +38,7 @@ func Ht_sign(M []byte, SKseed []byte, PKseed []byte, idx_tree int, idx_leaf int)
 	root := xmss.Xmss_pkFromSig(idx_leaf, SIG_tmp, M, PKseed, adrs)
 	for j := 1; j < parameters.D; j++ {
 		// idx_leaf = (h / d) least significant bits of idx_tree;
-		idx_leaf = idx_tree % (1 << (parameters.H/parameters.D))
+		idx_leaf = int(idx_tree % (1 << uint64(parameters.H/parameters.D)))
 		// idx_tree = (h - (j + 1) * (h / d)) most significant bits of idx_tree;
 		idx_tree = idx_tree >> (parameters.H/parameters.D) // Can this be changed to idx_tree >> parameters.H/parameters.D
 		adrs.SetLayerAddress(j)
@@ -53,7 +53,7 @@ func Ht_sign(M []byte, SKseed []byte, PKseed []byte, idx_tree int, idx_leaf int)
 	return &HTSignature{SIG_HT}
 }
 
-func Ht_verify(M []byte, SIG_HT *HTSignature, PKseed []byte, idx_tree int, idx_leaf int, PK_HT []byte) bool {
+func Ht_verify(M []byte, SIG_HT *HTSignature, PKseed []byte, idx_tree uint64, idx_leaf int, PK_HT []byte) bool {
 	// init
 	adrs := new(address.ADRS)
 
@@ -64,7 +64,7 @@ func Ht_verify(M []byte, SIG_HT *HTSignature, PKseed []byte, idx_tree int, idx_l
 	node := xmss.Xmss_pkFromSig(idx_leaf, SIG_tmp, M, PKseed, adrs)
 	
 	for j := 1; j < parameters.D; j++ {
-		idx_leaf = ^((^0) << (parameters.H/parameters.D)) & idx_tree
+		idx_leaf = int(idx_tree % (1 << uint64(parameters.H/parameters.D)))
 		idx_tree = idx_tree >> (parameters.H/parameters.D) // Can this be changed to idx_tree >> parameters.H/parameters.D
 		SIG_tmp = SIG_HT.GetXMSSSignature(j)
 		adrs.SetLayerAddress(j)

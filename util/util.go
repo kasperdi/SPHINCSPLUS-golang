@@ -23,6 +23,15 @@ func ToByte2(in int, outlen int) []byte {
 	return out
 }
 
+func ToByte3(in uint64, outlen int) []byte {
+	out := make([]byte, outlen)
+	for i := outlen - 1; i >= 0; i-- {
+        out[i] = byte(in & 0xff);
+        in = in >> 8;
+    }
+	return out
+}
+
 func BytesToUint64(in []byte) uint64 {
 	res := uint64(0)
 
