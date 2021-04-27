@@ -9,8 +9,6 @@ import (
 	"../hypertree"
 	"../fors"
 	"../tweakable"
-	"encoding/hex"
-	"fmt"
 
 )
 
@@ -82,16 +80,8 @@ func Spx_sign(M []byte, SK *SPHINCS_SK) *SPHINCS_SIG {
 		rand.Read(opt)
 	}
 
-	fmt.Println(hex.EncodeToString(SK.SKprf))
-
-	fmt.Println(hex.EncodeToString(opt))
-
-	fmt.Println(hex.EncodeToString(M))
-
-	hashFunc := tweakable.Sha256Tweak{}
+	hashFunc := tweakable.Sha256Tweak{Variant:tweakable.Robust}
 	R := hashFunc.PRFmsg(SK.SKprf, opt, M)
-
-	//fmt.Println(hex.EncodeToString(R))
 
 	SIG := new(SPHINCS_SIG)
 	SIG.R = R
@@ -123,17 +113,13 @@ func Spx_sign(M []byte, SK *SPHINCS_SK) *SPHINCS_SIG {
 	adrs.SetType(parameters.TREE)
 	SIG.SIG_HT = hypertree.Ht_sign(PK_FORS, SK.SKseed, SK.PKseed, idx_tree, idx_leaf)
 
-	/* fmt.Println("Tree, then leaf")
-	fmt.Println(idx_tree)
-	fmt.Println(idx_leaf) */
-
 	return SIG
 }
 
 func Spx_verify(M []byte, SIG *SPHINCS_SIG, PK *SPHINCS_PK) bool {
 	// init
 	adrs := new(address.ADRS)
-	hashFunc := tweakable.Sha256Tweak{}
+	hashFunc := tweakable.Sha256Tweak{Variant:tweakable.Robust}
 	R := SIG.GetR()
 	SIG_FORS := SIG.GetSIG_FORS()
 	SIG_HT := SIG.GetSIG_HT()
@@ -161,8 +147,5 @@ func Spx_verify(M []byte, SIG *SPHINCS_SIG, PK *SPHINCS_PK) bool {
 
 	// verify HT signature
 	adrs.SetType(parameters.TREE)
-	/* fmt.Println("Tree, then leaf")
-	fmt.Println(idx_tree)
-	fmt.Println(idx_leaf) */
 	return hypertree.Ht_verify(PK_FORS, SIG_HT, PK.PKseed, idx_tree, idx_leaf, PK.PKroot)
 }

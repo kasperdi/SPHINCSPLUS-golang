@@ -3,6 +3,7 @@ package address
 import (
 	"encoding/binary"
 	"../util"
+	"../parameters"
 )
 
 type ADRS struct {
@@ -27,6 +28,39 @@ func (adrs *ADRS) Copy() *ADRS {
 	newADRS.ChainAddress = adrs.ChainAddress
 	newADRS.HashAddress = adrs.HashAddress
 	return newADRS
+}
+
+func (adrs *ADRS) GetBytes() []byte {
+	ADRSbytes := make([]byte, 0)
+
+    ADRSbytes = append(ADRSbytes, adrs.LayerAddress[:]...)
+    ADRSbytes = append(ADRSbytes, adrs.TreeAddress[:]...)
+    ADRSbytes = append(ADRSbytes, adrs.Type[:]...)
+
+    switch adrs.GetType() {
+    case parameters.WOTS_HASH:
+        ADRSbytes = append(ADRSbytes, adrs.KeyPairAddress[:]...)
+        ADRSbytes = append(ADRSbytes, adrs.ChainAddress[:]...)
+        ADRSbytes = append(ADRSbytes, adrs.HashAddress[:]...)
+    case parameters.WOTS_PK:
+        ADRSbytes = append(ADRSbytes, adrs.KeyPairAddress[:]...)
+        ADRSbytes = append(ADRSbytes, make([]byte, 4)...)
+        ADRSbytes = append(ADRSbytes, make([]byte, 4)...)
+    case parameters.TREE:
+        ADRSbytes = append(ADRSbytes, make([]byte, 4)...)
+        ADRSbytes = append(ADRSbytes, adrs.TreeHeight[:]...)
+        ADRSbytes = append(ADRSbytes, adrs.TreeIndex[:]...)
+    case parameters.FORS_TREE:
+        ADRSbytes = append(ADRSbytes, adrs.KeyPairAddress[:]...)
+        ADRSbytes = append(ADRSbytes, adrs.TreeHeight[:]...)
+        ADRSbytes = append(ADRSbytes, adrs.TreeIndex[:]...)
+    case parameters.FORS_ROOTS:
+        ADRSbytes = append(ADRSbytes, adrs.KeyPairAddress[:]...)
+        ADRSbytes = append(ADRSbytes, make([]byte, 4)...)
+        ADRSbytes = append(ADRSbytes, make([]byte, 4)...)
+    }
+
+    return ADRSbytes
 }
 
 func (adrs *ADRS) SetLayerAddress(a int) { //uint32 eller int

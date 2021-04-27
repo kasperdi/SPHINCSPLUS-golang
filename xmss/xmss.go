@@ -27,7 +27,7 @@ func treehash(SKseed []byte, startIndex int, targetNodeHeight int, PKseed []byte
 		return nil
 	}
 
-	hashFunc := tweakable.Sha256Tweak{}
+	hashFunc := tweakable.Sha256Tweak{Variant:tweakable.Robust}
 	stack := util.Stack{}
 
 
@@ -42,7 +42,7 @@ func treehash(SKseed []byte, startIndex int, targetNodeHeight int, PKseed []byte
 		
 		for (len(stack) > 0 && (stack.Peek().NodeHeight == adrs.GetTreeHeight())) {
 			adrs.SetTreeIndex((adrs.GetTreeIndex() - 1) / 2)
-			node = hashFunc.H(tweakable.Robust, PKseed, adrs, append(stack.Pop().Node, node...))
+			node = hashFunc.H(PKseed, adrs, append(stack.Pop().Node, node...))
 			adrs.SetTreeHeight(adrs.GetTreeHeight() + 1)
 		}
 		
@@ -85,7 +85,7 @@ func Xmss_pkFromSig(idx int, SIG_XMSS *XMSSSignature, M []byte, PKseed []byte, a
 	node0 := wots.Wots_pkFromSig(sig, M, PKseed, adrs)
 	node1 := make([]byte, 0)
 
-	hashFunc := tweakable.Sha256Tweak{}
+	hashFunc := tweakable.Sha256Tweak{Variant:tweakable.Robust}
 
 	// compute root from WOTS+ pk and AUTH
 	adrs.SetType(parameters.TREE)
@@ -99,7 +99,7 @@ func Xmss_pkFromSig(idx int, SIG_XMSS *XMSSSignature, M []byte, PKseed []byte, a
 			copy(bytesToHash, node0)
 			copy(bytesToHash[parameters.N:], AUTH[k * parameters.N:(k+1)*parameters.N])
 
-			node1 = hashFunc.H(tweakable.Robust, PKseed, adrs, bytesToHash)
+			node1 = hashFunc.H(PKseed, adrs, bytesToHash)
 		} else {
 			adrs.SetTreeIndex((adrs.GetTreeIndex() - 1) / 2)
 
@@ -107,7 +107,7 @@ func Xmss_pkFromSig(idx int, SIG_XMSS *XMSSSignature, M []byte, PKseed []byte, a
 			copy(bytesToHash, AUTH[k * parameters.N:(k+1)*parameters.N])
 			copy(bytesToHash[parameters.N:], node0)
 
-			node1 = hashFunc.H(tweakable.Robust, PKseed, adrs, bytesToHash)
+			node1 = hashFunc.H(PKseed, adrs, bytesToHash)
 		}
 		node0 = node1
 	}

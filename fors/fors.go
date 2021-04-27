@@ -28,7 +28,7 @@ func (s *FORSSignature) GetAUTH(index int) []byte {
 
 
 func Fors_SKgen(SKseed []byte, adrs *address.ADRS, idx int) []byte {
-	hashFunc := tweakable.Sha256Tweak{}
+	hashFunc := tweakable.Sha256Tweak{Variant:tweakable.Robust}
 
 	adrs.SetTreeHeight(0)
 	adrs.SetTreeIndex(idx)
@@ -41,21 +41,21 @@ func Fors_treehash(SKseed []byte, startIndex int, targetNodeHeight int, PKseed [
 		return nil
 	}
 
-	hashFunc := tweakable.Sha256Tweak{}
+	hashFunc := tweakable.Sha256Tweak{Variant:tweakable.Robust}
 	stack := util.Stack{}
 	
 	for i := 0; i < int(math.Pow(2, float64(targetNodeHeight))); i++ {
 		adrs.SetTreeHeight(0)
 		adrs.SetTreeIndex(startIndex + i)
 		sk := hashFunc.PRF(SKseed, adrs)
-		node := hashFunc.F(tweakable.Robust, PKseed, adrs, sk)
+		node := hashFunc.F(PKseed, adrs, sk)
 		
 		adrs.SetTreeHeight(1)
 		adrs.SetTreeIndex(startIndex + i)
 		
 		for (len(stack) > 0 && (stack.Peek().NodeHeight == adrs.GetTreeHeight())) {
 			adrs.SetTreeIndex((adrs.GetTreeIndex() - 1) / 2)
-			node = hashFunc.H(tweakable.Robust, PKseed, adrs, append(stack.Pop().Node, node...))
+			node = hashFunc.H(PKseed, adrs, append(stack.Pop().Node, node...))
 			adrs.SetTreeHeight(adrs.GetTreeHeight() + 1)
 		}
 		
@@ -69,14 +69,14 @@ func Fors_treehash(SKseed []byte, startIndex int, targetNodeHeight int, PKseed [
 func Fors_PKgen(SKseed []byte, PKseed []byte, adrs *address.ADRS) []byte {
 	forsPKadrs := adrs.Copy()
 	root := make([]byte, parameters.K*parameters.N)
-	hashFunc := tweakable.Sha256Tweak{}
+	hashFunc := tweakable.Sha256Tweak{Variant:tweakable.Robust}
 
 	for i := 0; i < parameters.K; i++ {
 		copy(root[i * parameters.N:], Fors_treehash(SKseed, i*parameters.T, parameters.A, PKseed, adrs))
 	}
 	forsPKadrs.SetType(parameters.FORS_ROOTS)
 	forsPKadrs.SetKeyPairAddress(adrs.GetKeyPairAddress())
-	pk := hashFunc.T_l(tweakable.Robust, PKseed, forsPKadrs, root)
+	pk := hashFunc.T_l(PKseed, forsPKadrs, root)
 	
 	return pk
 }
@@ -98,7 +98,7 @@ func message_to_indices(M []byte) []int {
 
 
 func Fors_sign(M []byte, SKseed []byte, PKseed []byte, adrs *address.ADRS) *FORSSignature {
-	hashFunc := tweakable.Sha256Tweak{}
+	hashFunc := tweakable.Sha256Tweak{Variant:tweakable.Robust}
 	// compute signature elements
 	SIG_FORS := new(FORSSignature)
 
@@ -126,7 +126,7 @@ func Fors_sign(M []byte, SKseed []byte, PKseed []byte, adrs *address.ADRS) *FORS
 }
 
 func Fors_pkFromSig(SIG_FORS *FORSSignature, M []byte, PKseed []byte, adrs *address.ADRS) []byte {
-	hashFunc := tweakable.Sha256Tweak{}
+	hashFunc := tweakable.Sha256Tweak{Variant:tweakable.Robust}
 	root := make([]byte, parameters.K*parameters.N)
 	for i := 0; i < parameters.K; i++ {
 		// get next index
@@ -137,7 +137,7 @@ func Fors_pkFromSig(SIG_FORS *FORSSignature, M []byte, PKseed []byte, adrs *addr
 		adrs.SetTreeHeight(0)
 		adrs.SetTreeIndex(i * parameters.T + indices[i])
 	
-		node0 := hashFunc.F(tweakable.Robust, PKseed, adrs, sk)
+		node0 := hashFunc.F(PKseed, adrs, sk)
 		node1 := make([]byte, 0)
 		
 		// compute root from leaf and AUTH
@@ -154,7 +154,7 @@ func Fors_pkFromSig(SIG_FORS *FORSSignature, M []byte, PKseed []byte, adrs *addr
 				copy(bytesToHash, node0)
 				copy(bytesToHash[parameters.N:], auth[j * parameters.N:(j+1)*parameters.N])
 				
-				node1 = hashFunc.H(tweakable.Robust, PKseed, adrs, bytesToHash)
+				node1 = hashFunc.H(PKseed, adrs, bytesToHash)
 				
 			} else {
 				adrs.SetTreeIndex((adrs.GetTreeIndex() - 1) / 2)
@@ -163,7 +163,7 @@ func Fors_pkFromSig(SIG_FORS *FORSSignature, M []byte, PKseed []byte, adrs *addr
 				copy(bytesToHash, auth[j * parameters.N:(j+1)*parameters.N])
 				copy(bytesToHash[parameters.N:], node0)
 
-				node1 = hashFunc.H(tweakable.Robust, PKseed, adrs, bytesToHash)
+				node1 = hashFunc.H(PKseed, adrs, bytesToHash)
 			}
 			
 			node0 = node1
@@ -173,7 +173,7 @@ func Fors_pkFromSig(SIG_FORS *FORSSignature, M []byte, PKseed []byte, adrs *addr
 	forsPKadrs := adrs.Copy()
 	forsPKadrs.SetType(parameters.FORS_ROOTS)
 	forsPKadrs.SetKeyPairAddress(adrs.GetKeyPairAddress())
-	pk := hashFunc.T_l(tweakable.Robust, PKseed, forsPKadrs, root)
+	pk := hashFunc.T_l(PKseed, forsPKadrs, root)
 
 	return pk
 }

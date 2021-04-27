@@ -10,7 +10,7 @@ import (
 )
 
 // Calculates the value of F iterated s times on X
-func chain(X []byte, startIndex int, steps int, PKseed []byte, adrs *address.ADRS) []byte { //Replace ADRS with struct maybe
+func chain(X []byte, startIndex int, steps int, PKseed []byte, adrs *address.ADRS) []byte {
 	if(steps == 0) {
 		return X
 	}
@@ -22,8 +22,8 @@ func chain(X []byte, startIndex int, steps int, PKseed []byte, adrs *address.ADR
 
 	adrs.SetHashAddress(startIndex + steps - 1)
 
-	hashFunc := tweakable.Sha256Tweak{}
-	tmp = hashFunc.F(tweakable.Robust, PKseed, adrs, tmp) 
+	hashFunc := tweakable.Sha256Tweak{Variant:tweakable.Robust}
+	tmp = hashFunc.F(PKseed, adrs, tmp) 
 
 	return tmp
 }
@@ -58,7 +58,7 @@ func Wots_PKgen(SKseed []byte, PKseed []byte, adrs *address.ADRS) []byte {
 	wotspkADRS := adrs.Copy()
 
 	tmp := make([]byte, len * parameters.N)
-	hashFunc := tweakable.Sha256Tweak{}
+	hashFunc := tweakable.Sha256Tweak{Variant:tweakable.Robust}
 
 	for	i := 0; i < len; i++ {
 		adrs.SetChainAddress(i)
@@ -70,7 +70,7 @@ func Wots_PKgen(SKseed []byte, PKseed []byte, adrs *address.ADRS) []byte {
 	wotspkADRS.SetKeyPairAddress(adrs.GetKeyPairAddress())
 
 	pk := make([]byte, len * parameters.N)
-	pk = hashFunc.T_l(tweakable.Robust, PKseed, wotspkADRS, tmp)
+	pk = hashFunc.T_l(PKseed, wotspkADRS, tmp)
 	return pk
 }
 
@@ -98,7 +98,7 @@ func Wots_sign(message []byte, SKseed []byte, PKseed []byte, adrs *address.ADRS)
 
 	len2_bytes := int(math.Ceil( ( float64(len2) * math.Log2(parameters.W) ) / 8 ))
 	msg = append(msg, util.Base_w(util.ToByte2(csum, len2_bytes), parameters.W, len2)...)
-	hashFunc := tweakable.Sha256Tweak{}
+	hashFunc := tweakable.Sha256Tweak{Variant:tweakable.Robust}
 
 	sig := make([]byte, len * parameters.N)
 
@@ -135,7 +135,7 @@ func Wots_pkFromSig(signature []byte, message []byte, PKseed []byte, adrs *addre
 	csum = csum << (8 - ((len2*int(math.Log2(parameters.W)))% 8))
 	len2_bytes := int(math.Ceil( ( float64(len2) * math.Log2(parameters.W) ) / 8 ))
 	msg = append(msg, util.Base_w(util.ToByte2(csum, len2_bytes), parameters.W, len2)...)
-	hashFunc := tweakable.Sha256Tweak{}
+	hashFunc := tweakable.Sha256Tweak{Variant:tweakable.Robust}
 	tmp := make([]byte, len * parameters.N)
 	
 	for	i := 0; i < len; i++ {
@@ -146,6 +146,6 @@ func Wots_pkFromSig(signature []byte, message []byte, PKseed []byte, adrs *addre
 	wotspkADRS.SetType(parameters.WOTS_PK)
 	wotspkADRS.SetKeyPairAddress(adrs.GetKeyPairAddress())
 	
-	pk_sig := hashFunc.T_l(tweakable.Robust, PKseed, wotspkADRS, tmp)
+	pk_sig := hashFunc.T_l(PKseed, wotspkADRS, tmp)
 	return pk_sig
 }

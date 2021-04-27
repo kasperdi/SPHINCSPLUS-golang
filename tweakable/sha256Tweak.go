@@ -10,7 +10,7 @@ import (
 )
 
 type Sha256Tweak struct {
-    
+    Variant string
 }
 
 // Tweakable hash function Hmsg
@@ -49,14 +49,14 @@ func (h *Sha256Tweak) PRFmsg(SKprf []byte, OptRand []byte, M []byte) []byte {
 }
 
 // Tweakable hash function F
-func (h *Sha256Tweak) F(variant string, PKseed []byte, adrs *address.ADRS, tmp []byte) []byte {
+func (h *Sha256Tweak) F(PKseed []byte, adrs *address.ADRS, tmp []byte) []byte {
     M1 := make([]byte, len(tmp))
     compressedADRS := compressADRS(adrs)
 
-    if variant == Robust {
+    if h.Variant == Robust {
         bitmask := mgf1sha256(append(PKseed, compressedADRS...), len(tmp))
-        M1 = xorBytes(tmp, bitmask) 
-    } else if variant == Simple {
+        M1 = util.XorBytes(tmp, bitmask) 
+    } else if h.Variant == Simple {
         M1 = tmp
     }
     
@@ -71,13 +71,13 @@ func (h *Sha256Tweak) F(variant string, PKseed []byte, adrs *address.ADRS, tmp [
 }
 
 // Tweakable hash function H
-func (h *Sha256Tweak) H(variant string, PKseed []byte, adrs *address.ADRS, tmp []byte) []byte {
-    return h.F(variant, PKseed, adrs, tmp)
+func (h *Sha256Tweak) H(PKseed []byte, adrs *address.ADRS, tmp []byte) []byte {
+    return h.F(PKseed, adrs, tmp)
 }
 
 // Tweakable hash function T_l
-func (h *Sha256Tweak) T_l(variant string, PKseed []byte, adrs *address.ADRS , tmp []byte) []byte {
-    return h.F(variant, PKseed, adrs, tmp)
+func (h *Sha256Tweak) T_l(PKseed []byte, adrs *address.ADRS , tmp []byte) []byte {
+    return h.F(PKseed, adrs, tmp)
 }
 
  // Compresses ADRS into 22 bytes
@@ -129,13 +129,4 @@ func mgf1sha256(seed []byte, length int) []byte {
 	}
     // Extract the leading l octets of T as the octet string mask.
     return T[:length]
-}
-
-// Returns a XOR b, where a and b has to have same length
-func xorBytes(a []byte, b []byte) []byte {
-    res := make([]byte, len(a))
-    for i, elem := range a {
-        res[i] = elem ^ b[i]
-    }
-    return res
 }
