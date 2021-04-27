@@ -2,14 +2,14 @@ package sphincs
 
 import (
 	"testing"
-	/* "encoding/hex" */
-	/* "crypto/rand" */
-	/* "../parameters" */
-	/* "../hypertree" */
+	"encoding/hex"
+	"crypto/rand"
+	"../parameters"
+	"../hypertree"
 	/* "fmt" */
 )
 
-/* func TestSha256n256fRobust(t *testing.T) {
+func TestSha256n256fRobust(t *testing.T) {
 	//sk, pk := Spx_keygen()
 	
 	skprf, _ := hex.DecodeString("47616c696e736f676120737562646973636f6964656120697320612072617265")
@@ -50,10 +50,10 @@ import (
 	//fmt.Println("")
 
 	//t.Errorf("Verification failed, but was expected to succeed")
-} */
+}
 
 
-/* func TestSignAndVerify(t *testing.T) {
+func TestSignAndVerify(t *testing.T) {
 	for i := 1; i < 10; i++ {
 
 		message := make([]byte, parameters.N)
@@ -63,13 +63,11 @@ import (
 		signature := Spx_sign(message, sk)
 
 		if(!Spx_verify(message, signature, pk)) {
-			fmt.Println(sk)
-			fmt.Println(pk)
 			t.Errorf("Verification failed, but was expected to succeed")
 		}
 	}
 	
-} */
+}
 
 func BenchmarkKeygen(b *testing.B) {
 	for i := 0; i < b.N; i++ {	
@@ -78,8 +76,8 @@ func BenchmarkKeygen(b *testing.B) {
 }
 
 func BenchmarkSign(b *testing.B) {
-	text := "Galinsoga subdiscoidea is a rare"
-	message := []byte(text)
+	message := make([]byte, 32)
+	rand.Read(message)
 	sk, _ := Spx_keygen()
 
 	b.ResetTimer()
@@ -90,8 +88,8 @@ func BenchmarkSign(b *testing.B) {
 }
 
 func BenchmarkVerify(b *testing.B) {
-	text := "Galinsoga subdiscoidea is a rare"
-	message := []byte(text)
+	message := make([]byte, 32)
+	rand.Read(message)
 	sk, pk := Spx_keygen()
 	sig := Spx_sign(message, sk)
 
