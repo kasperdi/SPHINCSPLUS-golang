@@ -6,7 +6,7 @@ import (
 	"crypto/rand"
 	"../parameters"
 	"../hypertree"
-	/* "fmt" */
+	"fmt"
 )
 
 func TestSha256n256fRobust(t *testing.T) {
@@ -35,21 +35,21 @@ func TestSha256n256fRobust(t *testing.T) {
 		t.Errorf("Verification failed, but was expected to succeed")
 	}
 
-	//fmt.Println("Signature")
-	//fmt.Print(hex.EncodeToString(signature.R)) // R is now correct!!!
-	//for i := 0; i < parameters.K; i++ {
-	//	fmt.Print(hex.EncodeToString(signature.SIG_FORS.GetSK(i)))
-	//	fmt.Print(hex.EncodeToString(signature.SIG_FORS.GetAUTH(i)))
-	//}
+	fmt.Println("Signature")
+	fmt.Print(hex.EncodeToString(signature.R)) // R is now correct!!!
+	for i := 0; i < parameters.K; i++ {
+		fmt.Print(hex.EncodeToString(signature.SIG_FORS.GetSK(i)))
+		fmt.Print(hex.EncodeToString(signature.SIG_FORS.GetAUTH(i)))
+	}
 
-	//for _, xmssSig := range signature.SIG_HT.XMSSSignatures {
-	//	fmt.Print(hex.EncodeToString(xmssSig.GetWOTSSig()))
-	//	fmt.Print(hex.EncodeToString(xmssSig.GetXMSSAUTH()))
-	//}
-	//
-	//fmt.Println("")
+	for _, xmssSig := range signature.SIG_HT.XMSSSignatures {
+		fmt.Print(hex.EncodeToString(xmssSig.GetWOTSSig()))
+		fmt.Print(hex.EncodeToString(xmssSig.GetXMSSAUTH()))
+	}
+	
+	fmt.Println("")
 
-	//t.Errorf("Verification failed, but was expected to succeed")
+	t.Errorf("Verification failed, but was expected to succeed")
 }
 
 

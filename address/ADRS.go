@@ -39,36 +39,36 @@ func (adrs *ADRS) Copy() *ADRS {
 }
 
 func (adrs *ADRS) GetBytes() []byte {
-	ADRSbytes := make([]byte, 0)
+	ADRSc := make([]byte, 32)
 
-    ADRSbytes = append(ADRSbytes, adrs.LayerAddress[:]...)
-    ADRSbytes = append(ADRSbytes, adrs.TreeAddress[:]...)
-    ADRSbytes = append(ADRSbytes, adrs.Type[:]...)
+    copy(ADRSc[0:4], adrs.LayerAddress[:])
+    copy(ADRSc[4:16], adrs.TreeAddress[:])
+    copy(ADRSc[16:20], adrs.Type[:])
 
     switch adrs.GetType() {
     case WOTS_HASH:
-        ADRSbytes = append(ADRSbytes, adrs.KeyPairAddress[:]...)
-        ADRSbytes = append(ADRSbytes, adrs.ChainAddress[:]...)
-        ADRSbytes = append(ADRSbytes, adrs.HashAddress[:]...)
+        copy(ADRSc[10:14], adrs.KeyPairAddress[:])
+        copy(ADRSc[14:18], adrs.ChainAddress[:])
+        copy(ADRSc[18:22], adrs.HashAddress[:])
     case WOTS_PK:
-        ADRSbytes = append(ADRSbytes, adrs.KeyPairAddress[:]...)
-        ADRSbytes = append(ADRSbytes, make([]byte, 4)...)
-        ADRSbytes = append(ADRSbytes, make([]byte, 4)...)
+        copy(ADRSc[10:14], adrs.KeyPairAddress[:])
+        copy(ADRSc[14:18], make([]byte, 4))
+        copy(ADRSc[18:22], make([]byte, 4))
     case TREE:
-        ADRSbytes = append(ADRSbytes, make([]byte, 4)...)
-        ADRSbytes = append(ADRSbytes, adrs.TreeHeight[:]...)
-        ADRSbytes = append(ADRSbytes, adrs.TreeIndex[:]...)
+        copy(ADRSc[10:14], make([]byte, 4))
+        copy(ADRSc[14:18], adrs.TreeHeight[:])
+        copy(ADRSc[18:22], adrs.TreeIndex[:])
     case FORS_TREE:
-        ADRSbytes = append(ADRSbytes, adrs.KeyPairAddress[:]...)
-        ADRSbytes = append(ADRSbytes, adrs.TreeHeight[:]...)
-        ADRSbytes = append(ADRSbytes, adrs.TreeIndex[:]...)
+        copy(ADRSc[10:14], adrs.KeyPairAddress[:])
+        copy(ADRSc[14:18], adrs.TreeHeight[:])
+        copy(ADRSc[18:22], adrs.TreeIndex[:])
     case FORS_ROOTS:
-        ADRSbytes = append(ADRSbytes, adrs.KeyPairAddress[:]...)
-        ADRSbytes = append(ADRSbytes, make([]byte, 4)...)
-        ADRSbytes = append(ADRSbytes, make([]byte, 4)...)
+        copy(ADRSc[10:14], adrs.KeyPairAddress[:])
+        copy(ADRSc[14:18], make([]byte, 4))
+        copy(ADRSc[18:22], make([]byte, 4))
     }
 
-    return ADRSbytes
+    return ADRSc
 }
 
 func (adrs *ADRS) SetLayerAddress(a int) { //uint32 eller int

@@ -81,34 +81,34 @@ func (h *Sha256Tweak) T_l(PKseed []byte, adrs *address.ADRS , tmp []byte) []byte
 }
 
  // Compresses ADRS into 22 bytes
-func compressADRS(adrs *address.ADRS) []byte { // TODO: check if writing to buffer is faster than appending
-    ADRSc := make([]byte, 0)
+func compressADRS(adrs *address.ADRS) []byte {
+    ADRSc := make([]byte, 22)
 
-    ADRSc = append(ADRSc, adrs.LayerAddress[3:4]...)
-    ADRSc = append(ADRSc, adrs.TreeAddress[4:12]...)
-    ADRSc = append(ADRSc, adrs.Type[3:4]...)
+    copy(ADRSc[0:1], adrs.LayerAddress[3:4])
+    copy(ADRSc[1:9], adrs.TreeAddress[4:12])
+    copy(ADRSc[9:10], adrs.Type[3:4])
 
     switch adrs.GetType() {
     case address.WOTS_HASH:
-        ADRSc = append(ADRSc, adrs.KeyPairAddress[:]...)
-        ADRSc = append(ADRSc, adrs.ChainAddress[:]...)
-        ADRSc = append(ADRSc, adrs.HashAddress[:]...)
+        copy(ADRSc[10:14], adrs.KeyPairAddress[:])
+        copy(ADRSc[14:18], adrs.ChainAddress[:])
+        copy(ADRSc[18:22], adrs.HashAddress[:])
     case address.WOTS_PK:
-        ADRSc = append(ADRSc, adrs.KeyPairAddress[:]...)
-        ADRSc = append(ADRSc, make([]byte, 4)...)
-        ADRSc = append(ADRSc, make([]byte, 4)...)
+        copy(ADRSc[10:14], adrs.KeyPairAddress[:])
+        copy(ADRSc[14:18], make([]byte, 4))
+        copy(ADRSc[18:22], make([]byte, 4))
     case address.TREE:
-        ADRSc = append(ADRSc, make([]byte, 4)...)
-        ADRSc = append(ADRSc, adrs.TreeHeight[:]...)
-        ADRSc = append(ADRSc, adrs.TreeIndex[:]...)
+        copy(ADRSc[10:14], make([]byte, 4))
+        copy(ADRSc[14:18], adrs.TreeHeight[:])
+        copy(ADRSc[18:22], adrs.TreeIndex[:])
     case address.FORS_TREE:
-        ADRSc = append(ADRSc, adrs.KeyPairAddress[:]...)
-        ADRSc = append(ADRSc, adrs.TreeHeight[:]...)
-        ADRSc = append(ADRSc, adrs.TreeIndex[:]...)
+        copy(ADRSc[10:14], adrs.KeyPairAddress[:])
+        copy(ADRSc[14:18], adrs.TreeHeight[:])
+        copy(ADRSc[18:22], adrs.TreeIndex[:])
     case address.FORS_ROOTS:
-        ADRSc = append(ADRSc, adrs.KeyPairAddress[:]...)
-        ADRSc = append(ADRSc, make([]byte, 4)...)
-        ADRSc = append(ADRSc, make([]byte, 4)...)
+        copy(ADRSc[10:14], adrs.KeyPairAddress[:])
+        copy(ADRSc[14:18], make([]byte, 4))
+        copy(ADRSc[18:22], make([]byte, 4))
     }
 
     return ADRSc
