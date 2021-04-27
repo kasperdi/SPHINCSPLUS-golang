@@ -12,6 +12,19 @@ import (
 
 )
 
+type SPHINCS_PARAMS struct {
+	N int
+	W int
+	Hprime int
+	H int
+	D int
+	K int
+	T int
+	LogT int
+	A int
+	Randomize bool
+}
+
 type SPHINCS_PK struct {
 	PKseed []byte
 	PKroot []byte
@@ -102,7 +115,7 @@ func Spx_sign(M []byte, SK *SPHINCS_SK) *SPHINCS_SIG {
 	// FORS sign
 	adrs.SetLayerAddress(0)
 	adrs.SetTreeAddress(idx_tree)
-	adrs.SetType(parameters.FORS_TREE)
+	adrs.SetType(address.FORS_TREE)
 	adrs.SetKeyPairAddress(idx_leaf)
 
 	SIG.SIG_FORS = fors.Fors_sign(tmp_md, SK.SKseed, SK.PKseed, adrs)
@@ -110,7 +123,7 @@ func Spx_sign(M []byte, SK *SPHINCS_SK) *SPHINCS_SIG {
 	PK_FORS := fors.Fors_pkFromSig(SIG.SIG_FORS, tmp_md, SK.PKseed, adrs)
 
 	// sign FORS public key with HT
-	adrs.SetType(parameters.TREE)
+	adrs.SetType(address.TREE)
 	SIG.SIG_HT = hypertree.Ht_sign(PK_FORS, SK.SKseed, SK.PKseed, idx_tree, idx_leaf)
 
 	return SIG
@@ -140,12 +153,12 @@ func Spx_verify(M []byte, SIG *SPHINCS_SIG, PK *SPHINCS_PK) bool {
 	// compute FORS public key
 	adrs.SetLayerAddress(0)
 	adrs.SetTreeAddress(idx_tree)
-	adrs.SetType(parameters.FORS_TREE)
+	adrs.SetType(address.FORS_TREE)
 	adrs.SetKeyPairAddress(idx_leaf)
 
 	PK_FORS := fors.Fors_pkFromSig(SIG_FORS, tmp_md, PK.PKseed, adrs)
 
 	// verify HT signature
-	adrs.SetType(parameters.TREE)
+	adrs.SetType(address.TREE)
 	return hypertree.Ht_verify(PK_FORS, SIG_HT, PK.PKseed, idx_tree, idx_leaf, PK.PKroot)
 }

@@ -32,10 +32,10 @@ func treehash(SKseed []byte, startIndex int, targetNodeHeight int, PKseed []byte
 
 
 	for i := 0; i < int(math.Pow(2, float64(targetNodeHeight))); i++ {
-		adrs.SetType(parameters.WOTS_HASH)
+		adrs.SetType(address.WOTS_HASH)
 		adrs.SetKeyPairAddress(startIndex + i)
 		node := wots.Wots_PKgen(SKseed, PKseed, adrs)
-		adrs.SetType(parameters.TREE)
+		adrs.SetType(address.TREE)
 		adrs.SetTreeHeight(1)
 		adrs.SetTreeIndex(startIndex + i)
 			
@@ -66,7 +66,7 @@ func Xmss_sign(M []byte, SKseed []byte, idx int, PKseed []byte, adrs *address.AD
 
 	}
 	
-	adrs.SetType(parameters.WOTS_HASH)
+	adrs.SetType(address.WOTS_HASH)
 	adrs.SetKeyPairAddress(idx)
 	sig := wots.Wots_sign(M, SKseed, PKseed, adrs)
 	
@@ -77,7 +77,7 @@ func Xmss_sign(M []byte, SKseed []byte, idx int, PKseed []byte, adrs *address.AD
 
 func Xmss_pkFromSig(idx int, SIG_XMSS *XMSSSignature, M []byte, PKseed []byte, adrs *address.ADRS) []byte {
 	// compute WOTS+ pk from WOTS+ sig
-	adrs.SetType(parameters.WOTS_HASH)
+	adrs.SetType(address.WOTS_HASH)
 	adrs.SetKeyPairAddress(idx)
 	sig := SIG_XMSS.GetWOTSSig()
 	AUTH := SIG_XMSS.GetXMSSAUTH()
@@ -88,7 +88,7 @@ func Xmss_pkFromSig(idx int, SIG_XMSS *XMSSSignature, M []byte, PKseed []byte, a
 	hashFunc := tweakable.Sha256Tweak{Variant:tweakable.Robust}
 
 	// compute root from WOTS+ pk and AUTH
-	adrs.SetType(parameters.TREE)
+	adrs.SetType(address.TREE)
 	adrs.SetTreeIndex(idx)
 	for k := 0; k < parameters.Hmark; k++ {
 		adrs.SetTreeHeight(k+1)

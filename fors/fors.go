@@ -74,7 +74,7 @@ func Fors_PKgen(SKseed []byte, PKseed []byte, adrs *address.ADRS) []byte {
 	for i := 0; i < parameters.K; i++ {
 		copy(root[i * parameters.N:], Fors_treehash(SKseed, i*parameters.T, parameters.A, PKseed, adrs))
 	}
-	forsPKadrs.SetType(parameters.FORS_ROOTS)
+	forsPKadrs.SetType(address.FORS_ROOTS)
 	forsPKadrs.SetKeyPairAddress(adrs.GetKeyPairAddress())
 	pk := hashFunc.T_l(PKseed, forsPKadrs, root)
 	
@@ -171,7 +171,7 @@ func Fors_pkFromSig(SIG_FORS *FORSSignature, M []byte, PKseed []byte, adrs *addr
 		copy(root[i * parameters.N:], node0)
 	}
 	forsPKadrs := adrs.Copy()
-	forsPKadrs.SetType(parameters.FORS_ROOTS)
+	forsPKadrs.SetType(address.FORS_ROOTS)
 	forsPKadrs.SetKeyPairAddress(adrs.GetKeyPairAddress())
 	pk := hashFunc.T_l(PKseed, forsPKadrs, root)
 

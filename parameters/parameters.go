@@ -21,12 +21,5 @@ const (
 
 	// Parameters for SPHINCS+
 	RANDOMIZE = false
-
-	// ADRS types
-	WOTS_HASH = 0
-	WOTS_PK = 1
-	TREE = 2
-	FORS_TREE = 3
-	FORS_ROOTS = 4
 	
 )

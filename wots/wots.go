@@ -66,7 +66,7 @@ func Wots_PKgen(SKseed []byte, PKseed []byte, adrs *address.ADRS) []byte {
 		sk := hashFunc.PRF(SKseed, adrs)
 		copy(tmp[i * parameters.N:], chain(sk, 0, parameters.W - 1, PKseed, adrs))
 	}
-	wotspkADRS.SetType(parameters.WOTS_PK)
+	wotspkADRS.SetType(address.WOTS_PK)
 	wotspkADRS.SetKeyPairAddress(adrs.GetKeyPairAddress())
 
 	pk := make([]byte, len * parameters.N)
@@ -143,7 +143,7 @@ func Wots_pkFromSig(signature []byte, message []byte, PKseed []byte, adrs *addre
 		copy(tmp[i * parameters.N:], chain(signature[i * parameters.N:(i+1) * parameters.N], msg[i], parameters.W - 1 - msg[i], PKseed, adrs)) // IS THIS CORRECT??
 	}
 
-	wotspkADRS.SetType(parameters.WOTS_PK)
+	wotspkADRS.SetType(address.WOTS_PK)
 	wotspkADRS.SetKeyPairAddress(adrs.GetKeyPairAddress())
 	
 	pk_sig := hashFunc.T_l(PKseed, wotspkADRS, tmp)

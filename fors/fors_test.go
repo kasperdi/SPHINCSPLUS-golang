@@ -6,7 +6,6 @@ import (
 	"bytes"
 	"encoding/hex"
 	"../address"
-	"../parameters"
 	"fmt"
 )
 
@@ -19,7 +18,7 @@ func TestSha256n256fRobust(t *testing.T) {
 	SKseed := make([]byte, 32)
 
 	var adrs address.ADRS
-	adrs.SetType(parameters.FORS_TREE)
+	adrs.SetType(address.FORS_TREE)
 
 	pk1 := Fors_PKgen(SKseed, PKseed, &adrs)
 	/* fmt.Println(adrs) */
@@ -54,7 +53,7 @@ func TestSignAndVerify(t *testing.T) {
 		PKseed := make([]byte, 32)
 		rand.Read(SKseed)
 		var adrs address.ADRS
-		adrs.SetType(parameters.FORS_TREE)
+		adrs.SetType(address.FORS_TREE)
 
 		PK := Fors_PKgen(SKseed, PKseed, &adrs)
 
@@ -78,7 +77,7 @@ func TestSignVerifyWrongKey(t *testing.T) {
 		PKseed := make([]byte, 32)
 		rand.Read(SKseed)
 		var adrs address.ADRS
-		adrs.SetType(parameters.FORS_TREE)
+		adrs.SetType(address.FORS_TREE)
 
 		PK := Fors_PKgen(SKseed, PKseed, &adrs)
 

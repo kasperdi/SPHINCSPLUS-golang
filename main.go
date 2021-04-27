@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"encoding/hex"
-	"./parameters"
 	"./address"
 	"./fors"
 )
@@ -17,7 +16,7 @@ func main() {
 	}
 
 	var adrs address.ADRS
-	adrs.SetType(parameters.FORS_TREE)
+	adrs.SetType(address.FORS_TREE)
 
 
 	test := fors.Fors_treehash(SKseed, 14080, 3, PKseed, &adrs)

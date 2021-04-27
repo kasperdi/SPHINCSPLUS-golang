@@ -89,23 +89,23 @@ func compressADRS(adrs *address.ADRS) []byte { // TODO: check if writing to buff
     ADRSc = append(ADRSc, adrs.Type[3:4]...)
 
     switch adrs.GetType() {
-    case parameters.WOTS_HASH:
+    case address.WOTS_HASH:
         ADRSc = append(ADRSc, adrs.KeyPairAddress[:]...)
         ADRSc = append(ADRSc, adrs.ChainAddress[:]...)
         ADRSc = append(ADRSc, adrs.HashAddress[:]...)
-    case parameters.WOTS_PK:
+    case address.WOTS_PK:
         ADRSc = append(ADRSc, adrs.KeyPairAddress[:]...)
         ADRSc = append(ADRSc, make([]byte, 4)...)
         ADRSc = append(ADRSc, make([]byte, 4)...)
-    case parameters.TREE:
+    case address.TREE:
         ADRSc = append(ADRSc, make([]byte, 4)...)
         ADRSc = append(ADRSc, adrs.TreeHeight[:]...)
         ADRSc = append(ADRSc, adrs.TreeIndex[:]...)
-    case parameters.FORS_TREE:
+    case address.FORS_TREE:
         ADRSc = append(ADRSc, adrs.KeyPairAddress[:]...)
         ADRSc = append(ADRSc, adrs.TreeHeight[:]...)
         ADRSc = append(ADRSc, adrs.TreeIndex[:]...)
-    case parameters.FORS_ROOTS:
+    case address.FORS_ROOTS:
         ADRSc = append(ADRSc, adrs.KeyPairAddress[:]...)
         ADRSc = append(ADRSc, make([]byte, 4)...)
         ADRSc = append(ADRSc, make([]byte, 4)...)
