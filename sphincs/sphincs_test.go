@@ -4,7 +4,7 @@ import (
 	"testing"
 	"encoding/hex"
 	"crypto/rand"
-	/* "fmt" */
+	"fmt"
 	"../parameters"
 	"../hypertree"
 )
@@ -71,15 +71,43 @@ func TestSignAndVerify(t *testing.T) {
 	
 }
 
-func BenchmarkKeygen(b *testing.B) {
-	params := SphincsParams(*parameters.MakeSphincsPlusSHA256256fRobust(false))
+func BenchmarkSphincsPlus(b *testing.B) {
+	cases := []struct {
+		Param SphincsParams
+		SphincsVariant string
+	} {
+		{Param: SphincsParams(*parameters.MakeSphincsPlusSHA256256fRobust(false)), SphincsVariant: "SHA256256f-Robust"},
+		{Param: SphincsParams(*parameters.MakeSphincsPlusSHA256256sRobust(false)), SphincsVariant: "SHA256256s-Robust"},
+		{Param: SphincsParams(*parameters.MakeSphincsPlusSHA256256fSimple(false)), SphincsVariant: "SHA256256f-Simple"},
+		{Param: SphincsParams(*parameters.MakeSphincsPlusSHA256256sSimple(false)), SphincsVariant: "SHA256256s-Simple"},
+
+		{Param: SphincsParams(*parameters.MakeSphincsPlusSHA256192fRobust(false)), SphincsVariant: "SHA256192f-Robust"},
+		{Param: SphincsParams(*parameters.MakeSphincsPlusSHA256192sRobust(false)), SphincsVariant: "SHA256192s-Robust"},
+		{Param: SphincsParams(*parameters.MakeSphincsPlusSHA256192fSimple(false)), SphincsVariant: "SHA256192f-Simple"},
+		{Param: SphincsParams(*parameters.MakeSphincsPlusSHA256192sSimple(false)), SphincsVariant: "SHA256192s-Simple"},
+
+		{Param: SphincsParams(*parameters.MakeSphincsPlusSHA256128fRobust(false)), SphincsVariant: "SHA256128f-Robust"},
+		{Param: SphincsParams(*parameters.MakeSphincsPlusSHA256128sRobust(false)), SphincsVariant: "SHA256128s-Robust"},
+		{Param: SphincsParams(*parameters.MakeSphincsPlusSHA256128fSimple(false)), SphincsVariant: "SHA256128f-Simple"},
+		{Param: SphincsParams(*parameters.MakeSphincsPlusSHA256128sSimple(false)), SphincsVariant: "SHA256128s-Simple"},
+
+	}
+
+	for _, paramVal := range cases {
+		b.Run(fmt.Sprintf("Keygen %s", paramVal.SphincsVariant), func(b *testing.B) { benchmarkKeygen(b, paramVal.Param) })
+		b.Run(fmt.Sprintf("Sign %s", paramVal.SphincsVariant), func(b *testing.B) { benchmarkSign(b, paramVal.Param) })
+		b.Run(fmt.Sprintf("Verify %s", paramVal.SphincsVariant), func(b *testing.B) { benchmarkVerify(b, paramVal.Param) })
+	}
+	
+}
+
+func benchmarkKeygen(b *testing.B, params SphincsParams) {
 	for i := 0; i < b.N; i++ {	
 		params.Spx_keygen()
 	}
 }
 
-func BenchmarkSign(b *testing.B) {
-	params := SphincsParams(*parameters.MakeSphincsPlusSHA256256fRobust(false))
+func benchmarkSign(b *testing.B, params SphincsParams) {
 	message := make([]byte, 32)
 	rand.Read(message)
 	sk, _ := params.Spx_keygen()
@@ -91,8 +119,7 @@ func BenchmarkSign(b *testing.B) {
 	
 }
 
-func BenchmarkVerify(b *testing.B) {
-	params := SphincsParams(*parameters.MakeSphincsPlusSHA256256fRobust(false))
+func benchmarkVerify(b *testing.B, params SphincsParams) {
 	message := make([]byte, 32)
 	rand.Read(message)
 	sk, pk := params.Spx_keygen()

@@ -11,7 +11,7 @@ TODO list
     - [X] HyperTree
     - [X] FORS+
     - [X] SPHINCS+
-    - [ ] Haraka tweakable hash function
+    - [X] SHAKE256 tweakable hash function
     - [ ] Additional testing
 
 - [ ] Benchmarking
