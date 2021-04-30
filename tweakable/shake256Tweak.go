@@ -6,14 +6,14 @@ import (
 	"../util"
 )
 
-type ShakeTweak struct {
+type Shake256Tweak struct {
     Variant string
 	M2 int
 	N int
 }
 
 // Tweakable hash function Hmsg
-func (h *ShakeTweak) Hmsg(R []byte, PKseed []byte, PKroot []byte, M []byte) []byte {
+func (h *Shake256Tweak) Hmsg(R []byte, PKseed []byte, PKroot []byte, M []byte) []byte {
 	output := make([]byte, h.M2)
 	hash := sha3.NewShake256()
 	hash.Write(R)
@@ -25,7 +25,7 @@ func (h *ShakeTweak) Hmsg(R []byte, PKseed []byte, PKroot []byte, M []byte) []by
 }
 
 // Tweakable hash function PRF
-func (h *ShakeTweak) PRF(SEED []byte, adrs *address.ADRS) []byte {
+func (h *Shake256Tweak) PRF(SEED []byte, adrs *address.ADRS) []byte {
 	output := make([]byte, h.N)
 	hash := sha3.NewShake256()
 	hash.Write(SEED)
@@ -35,7 +35,7 @@ func (h *ShakeTweak) PRF(SEED []byte, adrs *address.ADRS) []byte {
 }
 
 // Tweakable hash function PRFmsg
-func (h *ShakeTweak) PRFmsg(SKprf []byte, OptRand []byte, M []byte) []byte {
+func (h *Shake256Tweak) PRFmsg(SKprf []byte, OptRand []byte, M []byte) []byte {
 	output := make([]byte, h.N)
 	hash := sha3.NewShake256()
 	hash.Write(SKprf)
@@ -45,7 +45,7 @@ func (h *ShakeTweak) PRFmsg(SKprf []byte, OptRand []byte, M []byte) []byte {
 }
 
 // Tweakable hash function F
-func (h *ShakeTweak) F(PKseed []byte, adrs *address.ADRS, tmp []byte) []byte {
+func (h *Shake256Tweak) F(PKseed []byte, adrs *address.ADRS, tmp []byte) []byte {
 	M1 := make([]byte, len(tmp))
 
     if h.Variant == Robust {
@@ -64,12 +64,12 @@ func (h *ShakeTweak) F(PKseed []byte, adrs *address.ADRS, tmp []byte) []byte {
 }
 
 // Tweakable hash function H
-func (h *ShakeTweak) H(PKseed []byte, adrs *address.ADRS, tmp []byte) []byte {
+func (h *Shake256Tweak) H(PKseed []byte, adrs *address.ADRS, tmp []byte) []byte {
 	return h.F(PKseed, adrs, tmp)
 }
 
 // Tweakable hash function T_l
-func (h *ShakeTweak) T_l(PKseed []byte, adrs *address.ADRS , tmp []byte) []byte {
+func (h *Shake256Tweak) T_l(PKseed []byte, adrs *address.ADRS , tmp []byte) []byte {
 	return h.F(PKseed, adrs, tmp)
 }
 

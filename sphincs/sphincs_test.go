@@ -91,6 +91,21 @@ func BenchmarkSphincsPlus(b *testing.B) {
 		{Param: SphincsParams(*parameters.MakeSphincsPlusSHA256128fSimple(false)), SphincsVariant: "SHA256128f-Simple"},
 		{Param: SphincsParams(*parameters.MakeSphincsPlusSHA256128sSimple(false)), SphincsVariant: "SHA256128s-Simple"},
 
+		{Param: SphincsParams(*parameters.MakeSphincsPlusSHAKE256256fRobust(false)), SphincsVariant: "SHAKE256256f-Robust"},
+		{Param: SphincsParams(*parameters.MakeSphincsPlusSHAKE256256sRobust(false)), SphincsVariant: "SHAKE256256s-Robust"},
+		{Param: SphincsParams(*parameters.MakeSphincsPlusSHAKE256256fSimple(false)), SphincsVariant: "SHAKE256256f-Simple"},
+		{Param: SphincsParams(*parameters.MakeSphincsPlusSHAKE256256sSimple(false)), SphincsVariant: "SHAKE256256s-Simple"},
+
+		{Param: SphincsParams(*parameters.MakeSphincsPlusSHAKE256192fRobust(false)), SphincsVariant: "SHAKE256192f-Robust"},
+		{Param: SphincsParams(*parameters.MakeSphincsPlusSHAKE256192sRobust(false)), SphincsVariant: "SHAKE256192s-Robust"},
+		{Param: SphincsParams(*parameters.MakeSphincsPlusSHAKE256192fSimple(false)), SphincsVariant: "SHAKE256192f-Simple"},
+		{Param: SphincsParams(*parameters.MakeSphincsPlusSHAKE256192sSimple(false)), SphincsVariant: "SHAKE256192s-Simple"},
+
+		{Param: SphincsParams(*parameters.MakeSphincsPlusSHAKE256128fRobust(false)), SphincsVariant: "SHAKE256128f-Robust"},
+		{Param: SphincsParams(*parameters.MakeSphincsPlusSHAKE256128sRobust(false)), SphincsVariant: "SHAKE256128s-Robust"},
+		{Param: SphincsParams(*parameters.MakeSphincsPlusSHAKE256128fSimple(false)), SphincsVariant: "SHAKE256128f-Simple"},
+		{Param: SphincsParams(*parameters.MakeSphincsPlusSHAKE256128sSimple(false)), SphincsVariant: "SHAKE256128s-Simple"},
+
 	}
 
 	for _, paramVal := range cases {
