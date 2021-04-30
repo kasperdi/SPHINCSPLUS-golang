@@ -8,22 +8,10 @@ import (
 	"../address"
 	"../hypertree"
 	"../fors"
-	"../tweakable"
 
 )
 
-type SPHINCS_PARAMS struct {
-	N int
-	W int
-	Hprime int
-	H int
-	D int
-	K int
-	T int
-	LogT int
-	A int
-	Randomize bool
-}
+type SphincsParams parameters.Parameters
 
 type SPHINCS_PK struct {
 	PKseed []byte
@@ -57,18 +45,19 @@ func (s *SPHINCS_SIG) GetSIG_HT() *hypertree.HTSignature {
 }
 
 
-func Spx_keygen() (*SPHINCS_SK, *SPHINCS_PK) {
+func (params *SphincsParams) Spx_keygen() (*SPHINCS_SK, *SPHINCS_PK) {
 
-	SKseed := make([]byte, parameters.N)
+	SKseed := make([]byte, params.N)
 	rand.Read(SKseed)
 
-	SKprf := make([]byte, parameters.N)
+	SKprf := make([]byte, params.N)
 	rand.Read(SKprf)
 
-	PKseed := make([]byte, parameters.N)
+	PKseed := make([]byte, params.N)
 	rand.Read(PKseed)
 
-	PKroot := hypertree.Ht_PKgen(SKseed, PKseed)
+	htParams := hypertree.HTParams(*params)
+	PKroot := htParams.Ht_PKgen(SKseed, PKseed)
 
 	sk := new(SPHINCS_SK)
 	sk.SKseed = SKseed
@@ -83,34 +72,33 @@ func Spx_keygen() (*SPHINCS_SK, *SPHINCS_PK) {
 	return sk, pk
 }
 
-func Spx_sign(M []byte, SK *SPHINCS_SK) *SPHINCS_SIG {
+func (params *SphincsParams) Spx_sign(M []byte, SK *SPHINCS_SK) *SPHINCS_SIG {
 	// init
 	adrs := new(address.ADRS)
 
 	// generate randomizer
-	opt := make([]byte, parameters.N)
-	if (parameters.RANDOMIZE) {
+	opt := make([]byte, params.N)
+	if (params.RANDOMIZE) {
 		rand.Read(opt)
 	}
 
-	hashFunc := tweakable.Sha256Tweak{Variant:tweakable.Robust}
-	R := hashFunc.PRFmsg(SK.SKprf, opt, M)
+	R := params.Tweak.PRFmsg(SK.SKprf, opt, M)
 
 	SIG := new(SPHINCS_SIG)
 	SIG.R = R
 
 	// compute message digest and index
-	digest := hashFunc.Hmsg(R, SK.PKseed, SK.PKroot, M)
-	tmp_md_bytes := int(math.Floor((parameters.K * parameters.A + 7) / 8))
-	tmp_idx_tree_bytes := int(math.Floor((parameters.H - parameters.H / parameters.D + 7) / 8))
-	tmp_idx_leaf_bytes := int(math.Floor(parameters.H / parameters.D + 7) / 8)
+	digest := params.Tweak.Hmsg(R, SK.PKseed, SK.PKroot, M)
+	tmp_md_bytes := int(math.Floor(float64(params.K * params.A + 7) / 8))
+	tmp_idx_tree_bytes := int(math.Floor(float64(params.H - params.H / params.D + 7) / 8))
+	tmp_idx_leaf_bytes := int(math.Floor(float64(params.H / params.D + 7)) / 8)
 
 	tmp_md := digest[:tmp_md_bytes]
 	tmp_idx_tree := digest[tmp_md_bytes:(tmp_md_bytes + tmp_idx_tree_bytes)]
 	tmp_idx_leaf := digest[(tmp_md_bytes + tmp_idx_tree_bytes):(tmp_md_bytes + tmp_idx_tree_bytes + tmp_idx_leaf_bytes)]
 
-	idx_tree := uint64(util.BytesToUint64(tmp_idx_tree) & (math.MaxUint64 >> (64 - (parameters.H - parameters.H / parameters.D))))
-	idx_leaf := int(util.BytesToUint32(tmp_idx_leaf) & (math.MaxUint32 >> (32 - parameters.H / parameters.D)))
+	idx_tree := uint64(util.BytesToUint64(tmp_idx_tree) & (math.MaxUint64 >> (64 - (params.H - params.H / params.D))))
+	idx_leaf := int(util.BytesToUint32(tmp_idx_leaf) & (math.MaxUint32 >> (32 - params.H / params.D)))
 
 	// FORS sign
 	adrs.SetLayerAddress(0)
@@ -118,37 +106,39 @@ func Spx_sign(M []byte, SK *SPHINCS_SK) *SPHINCS_SIG {
 	adrs.SetType(address.FORS_TREE)
 	adrs.SetKeyPairAddress(idx_leaf)
 
-	SIG.SIG_FORS = fors.Fors_sign(tmp_md, SK.SKseed, SK.PKseed, adrs)
+	forsParams := fors.ForsParams(*params)
 
-	PK_FORS := fors.Fors_pkFromSig(SIG.SIG_FORS, tmp_md, SK.PKseed, adrs)
+	SIG.SIG_FORS = forsParams.Fors_sign(tmp_md, SK.SKseed, SK.PKseed, adrs)
+
+	PK_FORS := forsParams.Fors_pkFromSig(SIG.SIG_FORS, tmp_md, SK.PKseed, adrs)
 
 	// sign FORS public key with HT
 	adrs.SetType(address.TREE)
-	SIG.SIG_HT = hypertree.Ht_sign(PK_FORS, SK.SKseed, SK.PKseed, idx_tree, idx_leaf)
+	htParams := hypertree.HTParams(*params)
+	SIG.SIG_HT = htParams.Ht_sign(PK_FORS, SK.SKseed, SK.PKseed, idx_tree, idx_leaf)
 
 	return SIG
 }
 
-func Spx_verify(M []byte, SIG *SPHINCS_SIG, PK *SPHINCS_PK) bool {
+func (params *SphincsParams) Spx_verify(M []byte, SIG *SPHINCS_SIG, PK *SPHINCS_PK) bool {
 	// init
 	adrs := new(address.ADRS)
-	hashFunc := tweakable.Sha256Tweak{Variant:tweakable.Robust}
 	R := SIG.GetR()
 	SIG_FORS := SIG.GetSIG_FORS()
 	SIG_HT := SIG.GetSIG_HT()
 
 	// compute message digest and index
-	digest := hashFunc.Hmsg(R, PK.PKseed, PK.PKroot, M)
-	tmp_md_bytes := int(math.Floor((parameters.K * parameters.A + 7) / 8))
-	tmp_idx_tree_bytes := int(math.Floor((parameters.H - parameters.H / parameters.D + 7) / 8))
-	tmp_idx_leaf_bytes := int(math.Floor(parameters.H / parameters.D + 7) / 8)
+	digest := params.Tweak.Hmsg(R, PK.PKseed, PK.PKroot, M)
+	tmp_md_bytes := int(math.Floor(float64(params.K * params.A + 7) / 8))
+	tmp_idx_tree_bytes := int(math.Floor(float64(params.H - params.H / params.D + 7) / 8))
+	tmp_idx_leaf_bytes := int(math.Floor(float64(params.H / params.D + 7)) / 8)
 
 	tmp_md := digest[:tmp_md_bytes]
 	tmp_idx_tree := digest[tmp_md_bytes:(tmp_md_bytes + tmp_idx_tree_bytes)]
 	tmp_idx_leaf := digest[(tmp_md_bytes + tmp_idx_tree_bytes):(tmp_md_bytes + tmp_idx_tree_bytes + tmp_idx_leaf_bytes)]
 
-	idx_tree := uint64(util.BytesToUint64(tmp_idx_tree) & (math.MaxUint64 >> (64 - (parameters.H - parameters.H / parameters.D))))
-	idx_leaf := int(util.BytesToUint32(tmp_idx_leaf) & (math.MaxUint32 >> (32 - parameters.H / parameters.D)))
+	idx_tree := uint64(util.BytesToUint64(tmp_idx_tree) & (math.MaxUint64 >> (64 - (params.H - params.H / params.D))))
+	idx_leaf := int(util.BytesToUint32(tmp_idx_leaf) & (math.MaxUint32 >> (32 - params.H / params.D)))
 	
 	// compute FORS public key
 	adrs.SetLayerAddress(0)
@@ -156,9 +146,13 @@ func Spx_verify(M []byte, SIG *SPHINCS_SIG, PK *SPHINCS_PK) bool {
 	adrs.SetType(address.FORS_TREE)
 	adrs.SetKeyPairAddress(idx_leaf)
 
-	PK_FORS := fors.Fors_pkFromSig(SIG_FORS, tmp_md, PK.PKseed, adrs)
+	forsParams := fors.ForsParams(*params)
+
+	PK_FORS := forsParams.Fors_pkFromSig(SIG_FORS, tmp_md, PK.PKseed, adrs)
 
 	// verify HT signature
 	adrs.SetType(address.TREE)
-	return hypertree.Ht_verify(PK_FORS, SIG_HT, PK.PKseed, idx_tree, idx_leaf, PK.PKroot)
+
+	htParams := hypertree.HTParams(*params)
+	return htParams.Ht_verify(PK_FORS, SIG_HT, PK.PKseed, idx_tree, idx_leaf, PK.PKroot)
 }

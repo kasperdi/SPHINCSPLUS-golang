@@ -3,23 +3,18 @@ package tweakable
 import (
     "crypto/sha256"
     "crypto/hmac"
-    "math"
     "../util"
     "../address"
-    "../parameters"
 )
 
 type Sha256Tweak struct {
     Variant string
+    M2 int
+    N int
 }
 
 // Tweakable hash function Hmsg
 func (h *Sha256Tweak) Hmsg(R []byte, PKseed []byte, PKroot []byte, M []byte) []byte {
-    md_len := int(math.Floor((parameters.K * parameters.LogT + 7) / 8))
-    idx_tree_len := int(math.Floor((parameters.H - parameters.H / parameters.D + 7) / 8))
-    idx_leaf_len := int(math.Floor(parameters.H / parameters.D + 7) / 8)
-
-    m := md_len + idx_tree_len + idx_leaf_len
 
     hash := sha256.New()
     hash.Write(R)
@@ -27,7 +22,7 @@ func (h *Sha256Tweak) Hmsg(R []byte, PKseed []byte, PKroot []byte, M []byte) []b
     hash.Write(PKroot)
     hash.Write(M)
     hashedConc := hash.Sum(nil)
-    bitmask := mgf1sha256(hashedConc, m)
+    bitmask := mgf1sha256(hashedConc, h.M2)
     return bitmask
 }
 
@@ -37,7 +32,7 @@ func (h *Sha256Tweak) PRF(SEED []byte, adrs *address.ADRS) []byte {
     hash := sha256.New()
     hash.Write(SEED)
     hash.Write(compressedADRS)
-    return hash.Sum(nil)[:parameters.N]
+    return hash.Sum(nil)[:h.N]
 }
 
 // Tweakable hash function PRFmsg
@@ -45,7 +40,7 @@ func (h *Sha256Tweak) PRFmsg(SKprf []byte, OptRand []byte, M []byte) []byte {
     mac := hmac.New(sha256.New, SKprf)
     mac.Write(OptRand)
     mac.Write(M)
-    return mac.Sum(nil)[:parameters.N]
+    return mac.Sum(nil)[:h.N]
 }
 
 // Tweakable hash function F
@@ -60,14 +55,14 @@ func (h *Sha256Tweak) F(PKseed []byte, adrs *address.ADRS, tmp []byte) []byte {
         M1 = tmp
     }
     
-    bytes := make([]byte, 64-parameters.N)
+    bytes := make([]byte, 64-h.N)
     
     hash := sha256.New()
     hash.Write(PKseed)
     hash.Write(bytes)
     hash.Write(compressedADRS)
     hash.Write(M1)
-    return hash.Sum(nil)[:parameters.N]
+    return hash.Sum(nil)[:h.N]
 }
 
 // Tweakable hash function H
