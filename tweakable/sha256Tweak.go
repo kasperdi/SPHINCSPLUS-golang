@@ -37,7 +37,7 @@ func (h *Sha256Tweak) PRF(SEED []byte, adrs *address.ADRS) []byte {
     hash := sha256.New()
     hash.Write(SEED)
     hash.Write(compressedADRS)
-    return hash.Sum(nil)
+    return hash.Sum(nil)[:parameters.N]
 }
 
 // Tweakable hash function PRFmsg
@@ -45,7 +45,7 @@ func (h *Sha256Tweak) PRFmsg(SKprf []byte, OptRand []byte, M []byte) []byte {
     mac := hmac.New(sha256.New, SKprf)
     mac.Write(OptRand)
     mac.Write(M)
-    return mac.Sum(nil)
+    return mac.Sum(nil)[:parameters.N]
 }
 
 // Tweakable hash function F
@@ -67,7 +67,7 @@ func (h *Sha256Tweak) F(PKseed []byte, adrs *address.ADRS, tmp []byte) []byte {
     hash.Write(bytes)
     hash.Write(compressedADRS)
     hash.Write(M1)
-    return hash.Sum(nil)
+    return hash.Sum(nil)[:parameters.N]
 }
 
 // Tweakable hash function H

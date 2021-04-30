@@ -18,12 +18,13 @@ func chain(X []byte, startIndex int, steps int, PKseed []byte, adrs *address.ADR
 		return nil
 	}
 
-	tmp := chain(X, startIndex, steps - 1, PKseed, adrs)
+	tmp := make([]byte, parameters.N)
+	copy(tmp, chain(X, startIndex, steps - 1, PKseed, adrs))
 
 	adrs.SetHashAddress(startIndex + steps - 1)
 
 	hashFunc := tweakable.Sha256Tweak{Variant:tweakable.Robust}
-	tmp = hashFunc.F(PKseed, adrs, tmp) 
+	copy(tmp, hashFunc.F(PKseed, adrs, tmp)) 
 
 	return tmp
 }
@@ -92,7 +93,7 @@ func Wots_sign(message []byte, SKseed []byte, PKseed []byte, adrs *address.ADRS)
 	}
 
 	// convert csum to base w
-	if int(math.Log2(parameters.W)) % 8 != 0 {		//Might be neccesary to convert result of Log2 to int with int(...)
+	if int(math.Log2(parameters.W)) % 8 != 0 {
 		csum = csum << (8 - ((len2 * int(math.Log2(parameters.W))) % 8))
 	}
 
@@ -140,7 +141,7 @@ func Wots_pkFromSig(signature []byte, message []byte, PKseed []byte, adrs *addre
 	
 	for	i := 0; i < len; i++ {
 		adrs.SetChainAddress(i)
-		copy(tmp[i * parameters.N:], chain(signature[i * parameters.N:(i+1) * parameters.N], msg[i], parameters.W - 1 - msg[i], PKseed, adrs)) // IS THIS CORRECT??
+		copy(tmp[i * parameters.N:], chain(signature[i * parameters.N:(i+1) * parameters.N], msg[i], parameters.W - 1 - msg[i], PKseed, adrs))
 	}
 
 	wotspkADRS.SetType(address.WOTS_PK)

@@ -6,7 +6,7 @@ import (
 	"crypto/rand"
 	"../parameters"
 	"../hypertree"
-	"fmt"
+	/* "fmt" */
 )
 
 func TestSha256n256fRobust(t *testing.T) {
@@ -35,7 +35,7 @@ func TestSha256n256fRobust(t *testing.T) {
 		t.Errorf("Verification failed, but was expected to succeed")
 	}
 
-	fmt.Println("Signature")
+	/* fmt.Println("Signature")
 	fmt.Print(hex.EncodeToString(signature.R)) // R is now correct!!!
 	for i := 0; i < parameters.K; i++ {
 		fmt.Print(hex.EncodeToString(signature.SIG_FORS.GetSK(i)))
@@ -49,12 +49,12 @@ func TestSha256n256fRobust(t *testing.T) {
 	
 	fmt.Println("")
 
-	t.Errorf("Verification failed, but was expected to succeed")
+	t.Errorf("Verification failed, but was expected to succeed") */
 }
 
 
 func TestSignAndVerify(t *testing.T) {
-	for i := 1; i < 10; i++ {
+	for i := 0; i < 5; i++ {
 
 		message := make([]byte, parameters.N)
 		rand.Read(message)

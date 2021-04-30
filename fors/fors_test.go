@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"encoding/hex"
 	"../address"
+	"../parameters"
 	"fmt"
 )
 
@@ -45,12 +46,12 @@ func TestSha256n256fRobust(t *testing.T) {
 
 // Tests that signed messages can be verified with the correct signature
 func TestSignAndVerify(t *testing.T) {
-	for i := 1; i < 10; i++ {
+	for i := 0; i < 5; i++ {
 		message := make([]byte, 64)
 		rand.Read(message)
-		SKseed := make([]byte, 32)
+		SKseed := make([]byte, parameters.N)
 		rand.Read(SKseed)
-		PKseed := make([]byte, 32)
+		PKseed := make([]byte, parameters.N)
 		rand.Read(SKseed)
 		var adrs address.ADRS
 		adrs.SetType(address.FORS_TREE)
@@ -67,14 +68,14 @@ func TestSignAndVerify(t *testing.T) {
 }
 
 func TestSignVerifyWrongKey(t *testing.T) {
-	for i := 1; i < 10; i++ {
+	for i := 1; i < 5; i++ {
 		message := make([]byte, 64)
 		rand.Read(message)
 		wrongMessage := make([]byte, 64)
 		rand.Read(wrongMessage)
-		SKseed := make([]byte, 32)
+		SKseed := make([]byte, parameters.N)
 		rand.Read(SKseed)
-		PKseed := make([]byte, 32)
+		PKseed := make([]byte, parameters.N)
 		rand.Read(SKseed)
 		var adrs address.ADRS
 		adrs.SetType(address.FORS_TREE)

@@ -7,7 +7,7 @@ import (
 
 // Tests that signed messages can be verified with the correct signature
 func TestSignAndVerify(t *testing.T) {
-	for i := 1; i < 10; i++ {
+	for i := 0; i < 5; i++ {
 		message := make([]byte, 32)
 		rand.Read(message)
 		SKseed := make([]byte, 32)
@@ -26,7 +26,7 @@ func TestSignAndVerify(t *testing.T) {
 }
 
 func TestSignVerifyWrongKey(t *testing.T) {
-	for i := 1; i < 10; i++ {
+	for i := 1; i < 5; i++ {
 		message := make([]byte, 32)
 		rand.Read(message)
 		wrongMessage := make([]byte, 32)

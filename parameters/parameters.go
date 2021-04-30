@@ -17,7 +17,7 @@ const (
 	K = 35
 	T = 512
 	LogT = 9
-	A = 9
+	A = LogT
 
 	// Parameters for SPHINCS+
 	RANDOMIZE = false

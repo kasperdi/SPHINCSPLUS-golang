@@ -5,16 +5,17 @@ import (
 	"crypto/rand"
 	"bytes"
 	"../address"
+	"../parameters"
 )
 
 // Tests that signed messages can be verified with the correct signature
 func TestSignAndVerify(t *testing.T) {
-	for i := 1; i < 100; i++ {
-		message := make([]byte, 32)
+	for i := 0; i < 10; i++ {
+		message := make([]byte, parameters.N)
 		rand.Read(message)
-		SKseed := make([]byte, 32)
+		SKseed := make([]byte, parameters.N)
 		rand.Read(SKseed)
-		PKseed := make([]byte, 32)
+		PKseed := make([]byte, parameters.N)
 		rand.Read(SKseed)
 		var adrs address.ADRS // Are 3 needed?
 		var adrs2 address.ADRS
@@ -32,14 +33,14 @@ func TestSignAndVerify(t *testing.T) {
 }
 
 func TestSignVerifyWrongKey(t *testing.T) {
-	for i := 1; i < 100; i++ {
-		message := make([]byte, 32)
+	for i := 1; i < 10; i++ {
+		message := make([]byte, parameters.N)
 		rand.Read(message)
-		wrongMessage := make([]byte, 32)
+		wrongMessage := make([]byte, parameters.N)
 		rand.Read(wrongMessage)
-		SKseed := make([]byte, 32)
+		SKseed := make([]byte, parameters.N)
 		rand.Read(SKseed)
-		PKseed := make([]byte, 32)
+		PKseed := make([]byte, parameters.N)
 		rand.Read(SKseed)
 		var adrs address.ADRS // Are 3 needed?
 		var adrs2 address.ADRS
