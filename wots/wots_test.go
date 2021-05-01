@@ -12,7 +12,7 @@ import (
 
 // Tests that signed messages can be verified with the correct signature
 func TestSignAndVerify(t *testing.T) {
-	params := WotsParams(*parameters.MakeSphincsPlusSHA256256fRobust(false))
+	params := parameters.MakeSphincsPlusSHA256256fRobust(false)
 	for i := 0; i < 10; i++ {
 		message := make([]byte, params.N)
 		rand.Read(message)
@@ -22,11 +22,11 @@ func TestSignAndVerify(t *testing.T) {
 		rand.Read(SKseed)
 		var adrs address.ADRS  // Are 3 needed?
 
-		PK := params.Wots_PKgen(SKseed, PKseed, &adrs)
+		PK := Wots_PKgen(params, SKseed, PKseed, &adrs)
 
-		signature := params.Wots_sign(message, SKseed, PKseed, &adrs)
+		signature := Wots_sign(params ,message, SKseed, PKseed, &adrs)
 
-		pkFromSig := params.Wots_pkFromSig(signature, message, PKseed, &adrs)
+		pkFromSig := Wots_pkFromSig(params, signature, message, PKseed, &adrs)
 		fmt.Println(hex.EncodeToString(PK))
 		fmt.Println(hex.EncodeToString(pkFromSig))
 		if(!bytes.Equal(pkFromSig, PK)) {
@@ -38,7 +38,7 @@ func TestSignAndVerify(t *testing.T) {
 
 // Ensures that a wrong key cannot be used to verify a message
 func TestSignVerifyWrongKey(t *testing.T) {
-	params := WotsParams(*parameters.MakeSphincsPlusSHA256256fRobust(false))
+	params := parameters.MakeSphincsPlusSHA256256fRobust(false)
 	for i := 0; i < 10; i++ {
 		message := make([]byte, params.N)
 		rand.Read(message)
@@ -52,11 +52,11 @@ func TestSignVerifyWrongKey(t *testing.T) {
 		var adrs2 address.ADRS
 		var adrs3 address.ADRS
 
-		PK := params.Wots_PKgen(SKseed, PKseed, &adrs)
+		PK := Wots_PKgen(params, SKseed, PKseed, &adrs)
 
-		signature := params.Wots_sign(message, SKseed, PKseed, &adrs2)
+		signature := Wots_sign(params, message, SKseed, PKseed, &adrs2)
 
-		pkFromSig := params.Wots_pkFromSig(signature, wrongMessage, PKseed, &adrs3)
+		pkFromSig := Wots_pkFromSig(params, signature, wrongMessage, PKseed, &adrs3)
 		if(bytes.Equal(pkFromSig, PK)) {
 			t.Errorf("Verification of signed message succeeded, but was expected to fail!")
 		}
@@ -64,7 +64,7 @@ func TestSignVerifyWrongKey(t *testing.T) {
 }
 
 func TestSignFixed(t *testing.T) {
-	params := WotsParams(*parameters.MakeSphincsPlusSHA256256fRobust(false))
+	params := parameters.MakeSphincsPlusSHA256256fRobust(false)
 	tmp := make([]byte, params.N)
 	for i := 0; i < params.N; i++ {
 		tmp[i] = byte(i);
@@ -73,7 +73,7 @@ func TestSignFixed(t *testing.T) {
 
 	var adrs address.ADRS
 
-	signature := params.Wots_sign(tmp, SKseed, tmp, &adrs)
+	signature := Wots_sign(params, tmp, SKseed, tmp, &adrs)
 
 	SignatureAsString := hex.EncodeToString(signature)
 
@@ -84,7 +84,5 @@ func TestSignFixed(t *testing.T) {
 	if SignatureAsString != expected {
 		t.Errorf("Error: Got %s", SignatureAsString)
 	}
-
-	t.Errorf("Error: Got %s", SignatureAsString)
 
 }

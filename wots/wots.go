@@ -7,11 +7,9 @@ import (
 	"../util"
 )
 
-type WotsParams parameters.Parameters
-
 // Calculates the value of F iterated s times on X
-func (params *WotsParams) chain(X []byte, startIndex int, steps int, PKseed []byte, adrs *address.ADRS) []byte {
-	if(steps == 0) {
+func chain(params *parameters.Parameters, X []byte, startIndex int, steps int, PKseed []byte, adrs *address.ADRS) []byte {
+	if(steps == 0) {	
 		return X
 	}
 	if((startIndex + steps) > (params.W-1)) {
@@ -19,7 +17,7 @@ func (params *WotsParams) chain(X []byte, startIndex int, steps int, PKseed []by
 	}
 
 	tmp := make([]byte, params.N)
-	copy(tmp, params.chain(X, startIndex, steps - 1, PKseed, adrs))
+	copy(tmp, chain(params, X, startIndex, steps - 1, PKseed, adrs))
 
 	adrs.SetHashAddress(startIndex + steps - 1)
 	copy(tmp, params.Tweak.F(PKseed, adrs, tmp)) 
@@ -28,7 +26,7 @@ func (params *WotsParams) chain(X []byte, startIndex int, steps int, PKseed []by
 }
 
 // WOTS+ public key generation
-func (params *WotsParams) Wots_PKgen(SKseed []byte, PKseed []byte, adrs *address.ADRS) []byte {
+func Wots_PKgen(params *parameters.Parameters, SKseed []byte, PKseed []byte, adrs *address.ADRS) []byte {
 	//wotspkADRS := adrs // Make a copy of adrs
 	wotspkADRS := adrs.Copy()
 
@@ -38,7 +36,7 @@ func (params *WotsParams) Wots_PKgen(SKseed []byte, PKseed []byte, adrs *address
 		adrs.SetChainAddress(i)
 		adrs.SetHashAddress(0)
 		sk := params.Tweak.PRF(SKseed, adrs)
-		copy(tmp[i * params.N:], params.chain(sk, 0, params.W - 1, PKseed, adrs))
+		copy(tmp[i * params.N:], chain(params, sk, 0, params.W - 1, PKseed, adrs))
 	}
 	wotspkADRS.SetType(address.WOTS_PK)
 	wotspkADRS.SetKeyPairAddress(adrs.GetKeyPairAddress())
@@ -49,7 +47,7 @@ func (params *WotsParams) Wots_PKgen(SKseed []byte, PKseed []byte, adrs *address
 }
 
 // Signs a message using WOTS+
-func (params *WotsParams) Wots_sign(message []byte, SKseed []byte, PKseed []byte, adrs *address.ADRS) []byte {
+func Wots_sign(params *parameters.Parameters, message []byte, SKseed []byte, PKseed []byte, adrs *address.ADRS) []byte {
 	csum := 0
 
 	// Convert message to base w
@@ -73,14 +71,14 @@ func (params *WotsParams) Wots_sign(message []byte, SKseed []byte, PKseed []byte
 		adrs.SetChainAddress(i)
 		adrs.SetHashAddress(0)
 		sk := params.Tweak.PRF(SKseed, adrs)
-		copy(sig[i * params.N:], params.chain(sk, 0, msg[i], PKseed, adrs))
+		copy(sig[i * params.N:], chain(params, sk, 0, msg[i], PKseed, adrs))
 	}
 
 	return sig
 }
 
 // Finds pk from signature, for verification
-func (params *WotsParams) Wots_pkFromSig(signature []byte, message []byte, PKseed []byte, adrs *address.ADRS) []byte {
+func Wots_pkFromSig(params *parameters.Parameters, signature []byte, message []byte, PKseed []byte, adrs *address.ADRS) []byte {
 	csum := 0
 
 	//wotspkADRS := adrs // Make a copy of adrs
@@ -102,7 +100,7 @@ func (params *WotsParams) Wots_pkFromSig(signature []byte, message []byte, PKsee
 	
 	for	i := 0; i < params.Len; i++ {
 		adrs.SetChainAddress(i)
-		copy(tmp[i * params.N:], params.chain(signature[i * params.N:(i+1) * params.N], msg[i], params.W - 1 - msg[i], PKseed, adrs))
+		copy(tmp[i * params.N:], chain(params, signature[i * params.N:(i+1) * params.N], msg[i], params.W - 1 - msg[i], PKseed, adrs))
 	}
 
 	wotspkADRS.SetType(address.WOTS_PK)

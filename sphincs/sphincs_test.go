@@ -10,7 +10,7 @@ import (
 )
 
 func TestSha256n256fRobust(t *testing.T) {
-	params := SphincsParams(*parameters.MakeSphincsPlusSHA256256fRobust(false))
+	params := parameters.MakeSphincsPlusSHA256256fRobust(false)
 	
 	skprf, _ := hex.DecodeString("47616c696e736f676120737562646973636f6964656120697320612072617265")
 
@@ -21,8 +21,7 @@ func TestSha256n256fRobust(t *testing.T) {
 	sk.SKseed = make([]byte, params.N)
 	sk.SKprf = skprf
 
-	htParams := hypertree.HTParams(params)
-	root := htParams.Ht_PKgen(sk.SKseed, sk.PKseed)
+	root := hypertree.Ht_PKgen(params, sk.SKseed, sk.PKseed)
 
 	pk.PKroot = root
 	sk.PKroot = root
@@ -30,14 +29,14 @@ func TestSha256n256fRobust(t *testing.T) {
 	text := "Galinsoga subdiscoidea is a rare"
 	bytesToSign := []byte(text)
 
-	signature := params.Spx_sign(bytesToSign, sk)
+	signature := Spx_sign(params, bytesToSign, sk)
 
-	if(!params.Spx_verify(bytesToSign, signature, pk)) {
+	if(!Spx_verify(params, bytesToSign, signature, pk)) {
 		t.Errorf("Verification failed, but was expected to succeed")
 	}
 
 	/* fmt.Println("Signature")
-	fmt.Print(hex.EncodeToString(signature.R)) // R is now correct!!!
+	fmt.Print(hex.EncodeToString(signature.R))
 	for i := 0; i < params.K; i++ {
 		fmt.Print(hex.EncodeToString(signature.SIG_FORS.GetSK(i)))
 		fmt.Print(hex.EncodeToString(signature.SIG_FORS.GetAUTH(i)))
@@ -55,16 +54,16 @@ func TestSha256n256fRobust(t *testing.T) {
 
 
 func TestSignAndVerify(t *testing.T) {
-	params := SphincsParams(*parameters.MakeSphincsPlusSHA256256fRobust(false))
+	params := parameters.MakeSphincsPlusSHA256256fRobust(false)
 	for i := 0; i < 5; i++ {
 
 		message := make([]byte, params.N)
 		rand.Read(message)
 
-		sk, pk := params.Spx_keygen()
-		signature := params.Spx_sign(message, sk)
+		sk, pk := Spx_keygen(params)
+		signature := Spx_sign(params, message, sk)
 
-		if(!params.Spx_verify(message, signature, pk)) {
+		if(!Spx_verify(params, message, signature, pk)) {
 			t.Errorf("Verification failed, but was expected to succeed")
 		}
 	}
@@ -73,38 +72,38 @@ func TestSignAndVerify(t *testing.T) {
 
 func BenchmarkSphincsPlus(b *testing.B) {
 	cases := []struct {
-		Param SphincsParams
+		Param *parameters.Parameters
 		SphincsVariant string
 	} {
-		{Param: SphincsParams(*parameters.MakeSphincsPlusSHA256256fRobust(false)), SphincsVariant: "SHA256256f-Robust"},
-		{Param: SphincsParams(*parameters.MakeSphincsPlusSHA256256sRobust(false)), SphincsVariant: "SHA256256s-Robust"},
-		{Param: SphincsParams(*parameters.MakeSphincsPlusSHA256256fSimple(false)), SphincsVariant: "SHA256256f-Simple"},
-		{Param: SphincsParams(*parameters.MakeSphincsPlusSHA256256sSimple(false)), SphincsVariant: "SHA256256s-Simple"},
+		{Param: parameters.MakeSphincsPlusSHA256256fRobust(false), SphincsVariant: "SHA256256f-Robust"},
+		{Param: parameters.MakeSphincsPlusSHA256256sRobust(false), SphincsVariant: "SHA256256s-Robust"},
+		{Param: parameters.MakeSphincsPlusSHA256256fSimple(false), SphincsVariant: "SHA256256f-Simple"},
+		{Param: parameters.MakeSphincsPlusSHA256256sSimple(false), SphincsVariant: "SHA256256s-Simple"},
 
-		{Param: SphincsParams(*parameters.MakeSphincsPlusSHA256192fRobust(false)), SphincsVariant: "SHA256192f-Robust"},
-		{Param: SphincsParams(*parameters.MakeSphincsPlusSHA256192sRobust(false)), SphincsVariant: "SHA256192s-Robust"},
-		{Param: SphincsParams(*parameters.MakeSphincsPlusSHA256192fSimple(false)), SphincsVariant: "SHA256192f-Simple"},
-		{Param: SphincsParams(*parameters.MakeSphincsPlusSHA256192sSimple(false)), SphincsVariant: "SHA256192s-Simple"},
+		{Param: parameters.MakeSphincsPlusSHA256192fRobust(false), SphincsVariant: "SHA256192f-Robust"},
+		{Param: parameters.MakeSphincsPlusSHA256192sRobust(false), SphincsVariant: "SHA256192s-Robust"},
+		{Param: parameters.MakeSphincsPlusSHA256192fSimple(false), SphincsVariant: "SHA256192f-Simple"},
+		{Param: parameters.MakeSphincsPlusSHA256192sSimple(false), SphincsVariant: "SHA256192s-Simple"},
 
-		{Param: SphincsParams(*parameters.MakeSphincsPlusSHA256128fRobust(false)), SphincsVariant: "SHA256128f-Robust"},
-		{Param: SphincsParams(*parameters.MakeSphincsPlusSHA256128sRobust(false)), SphincsVariant: "SHA256128s-Robust"},
-		{Param: SphincsParams(*parameters.MakeSphincsPlusSHA256128fSimple(false)), SphincsVariant: "SHA256128f-Simple"},
-		{Param: SphincsParams(*parameters.MakeSphincsPlusSHA256128sSimple(false)), SphincsVariant: "SHA256128s-Simple"},
+		{Param: parameters.MakeSphincsPlusSHA256128fRobust(false), SphincsVariant: "SHA256128f-Robust"},
+		{Param: parameters.MakeSphincsPlusSHA256128sRobust(false), SphincsVariant: "SHA256128s-Robust"},
+		{Param: parameters.MakeSphincsPlusSHA256128fSimple(false), SphincsVariant: "SHA256128f-Simple"},
+		{Param: parameters.MakeSphincsPlusSHA256128sSimple(false), SphincsVariant: "SHA256128s-Simple"},
 
-		{Param: SphincsParams(*parameters.MakeSphincsPlusSHAKE256256fRobust(false)), SphincsVariant: "SHAKE256256f-Robust"},
-		{Param: SphincsParams(*parameters.MakeSphincsPlusSHAKE256256sRobust(false)), SphincsVariant: "SHAKE256256s-Robust"},
-		{Param: SphincsParams(*parameters.MakeSphincsPlusSHAKE256256fSimple(false)), SphincsVariant: "SHAKE256256f-Simple"},
-		{Param: SphincsParams(*parameters.MakeSphincsPlusSHAKE256256sSimple(false)), SphincsVariant: "SHAKE256256s-Simple"},
+		{Param: parameters.MakeSphincsPlusSHAKE256256fRobust(false), SphincsVariant: "SHAKE256256f-Robust"},
+		{Param: parameters.MakeSphincsPlusSHAKE256256sRobust(false), SphincsVariant: "SHAKE256256s-Robust"},
+		{Param: parameters.MakeSphincsPlusSHAKE256256fSimple(false), SphincsVariant: "SHAKE256256f-Simple"},
+		{Param: parameters.MakeSphincsPlusSHAKE256256sSimple(false), SphincsVariant: "SHAKE256256s-Simple"},
 
-		{Param: SphincsParams(*parameters.MakeSphincsPlusSHAKE256192fRobust(false)), SphincsVariant: "SHAKE256192f-Robust"},
-		{Param: SphincsParams(*parameters.MakeSphincsPlusSHAKE256192sRobust(false)), SphincsVariant: "SHAKE256192s-Robust"},
-		{Param: SphincsParams(*parameters.MakeSphincsPlusSHAKE256192fSimple(false)), SphincsVariant: "SHAKE256192f-Simple"},
-		{Param: SphincsParams(*parameters.MakeSphincsPlusSHAKE256192sSimple(false)), SphincsVariant: "SHAKE256192s-Simple"},
+		{Param: parameters.MakeSphincsPlusSHAKE256192fRobust(false), SphincsVariant: "SHAKE256192f-Robust"},
+		{Param: parameters.MakeSphincsPlusSHAKE256192sRobust(false), SphincsVariant: "SHAKE256192s-Robust"},
+		{Param: parameters.MakeSphincsPlusSHAKE256192fSimple(false), SphincsVariant: "SHAKE256192f-Simple"},
+		{Param: parameters.MakeSphincsPlusSHAKE256192sSimple(false), SphincsVariant: "SHAKE256192s-Simple"},
 
-		{Param: SphincsParams(*parameters.MakeSphincsPlusSHAKE256128fRobust(false)), SphincsVariant: "SHAKE256128f-Robust"},
-		{Param: SphincsParams(*parameters.MakeSphincsPlusSHAKE256128sRobust(false)), SphincsVariant: "SHAKE256128s-Robust"},
-		{Param: SphincsParams(*parameters.MakeSphincsPlusSHAKE256128fSimple(false)), SphincsVariant: "SHAKE256128f-Simple"},
-		{Param: SphincsParams(*parameters.MakeSphincsPlusSHAKE256128sSimple(false)), SphincsVariant: "SHAKE256128s-Simple"},
+		{Param: parameters.MakeSphincsPlusSHAKE256128fRobust(false), SphincsVariant: "SHAKE256128f-Robust"},
+		{Param: parameters.MakeSphincsPlusSHAKE256128sRobust(false), SphincsVariant: "SHAKE256128s-Robust"},
+		{Param: parameters.MakeSphincsPlusSHAKE256128fSimple(false), SphincsVariant: "SHAKE256128f-Simple"},
+		{Param: parameters.MakeSphincsPlusSHAKE256128sSimple(false), SphincsVariant: "SHAKE256128s-Simple"},
 
 	}
 
@@ -113,36 +112,35 @@ func BenchmarkSphincsPlus(b *testing.B) {
 		b.Run(fmt.Sprintf("Sign %s", paramVal.SphincsVariant), func(b *testing.B) { benchmarkSign(b, paramVal.Param) })
 		b.Run(fmt.Sprintf("Verify %s", paramVal.SphincsVariant), func(b *testing.B) { benchmarkVerify(b, paramVal.Param) })
 	}
-	
 }
 
-func benchmarkKeygen(b *testing.B, params SphincsParams) {
+func benchmarkKeygen(b *testing.B, params *parameters.Parameters) {
 	for i := 0; i < b.N; i++ {	
-		params.Spx_keygen()
+		Spx_keygen(params)
 	}
 }
 
-func benchmarkSign(b *testing.B, params SphincsParams) {
+func benchmarkSign(b *testing.B, params *parameters.Parameters) {
 	message := make([]byte, 32)
 	rand.Read(message)
-	sk, _ := params.Spx_keygen()
+	sk, _ := Spx_keygen(params)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {	
-		params.Spx_sign(message, sk)
+		Spx_sign(params, message, sk)
 	}
 	
 }
 
-func benchmarkVerify(b *testing.B, params SphincsParams) {
+func benchmarkVerify(b *testing.B, params *parameters.Parameters) {
 	message := make([]byte, 32)
 	rand.Read(message)
-	sk, pk := params.Spx_keygen()
-	sig := params.Spx_sign(message, sk)
+	sk, pk := Spx_keygen(params)
+	sig := Spx_sign(params, message, sk)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {	
-		params.Spx_verify(message, sig, pk)
+		Spx_verify(params, message, sig, pk)
 	}
 }
 

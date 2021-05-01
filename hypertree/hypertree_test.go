@@ -8,7 +8,7 @@ import (
 
 // Tests that signed messages can be verified with the correct signature
 func TestSignAndVerify(t *testing.T) {
-	params := HTParams(*parameters.MakeSphincsPlusSHA256256fRobust(false))
+	params := parameters.MakeSphincsPlusSHA256256fRobust(false)
 	for i := 0; i < 5; i++ {
 		message := make([]byte, 32)
 		rand.Read(message)
@@ -17,18 +17,18 @@ func TestSignAndVerify(t *testing.T) {
 		PKseed := make([]byte, 32)
 		rand.Read(SKseed)
 
-		PK := params.Ht_PKgen(SKseed, PKseed)
+		PK := Ht_PKgen(params, SKseed, PKseed)
 
-		signature := params.Ht_sign(message, SKseed, PKseed, 0, 0)
+		signature := Ht_sign(params, message, SKseed, PKseed, 0, 0)
 
-		if (!params.Ht_verify(message, signature, PKseed, 0, 0, PK)) {
+		if (!Ht_verify(params, message, signature, PKseed, 0, 0, PK)) {
 			t.Errorf("Verification of signed message failed, but was expected to succeed!")
 		}
 	}
 }
 
 func TestSignVerifyWrongKey(t *testing.T) {
-	params := HTParams(*parameters.MakeSphincsPlusSHA256256fRobust(false))
+	params := parameters.MakeSphincsPlusSHA256256fRobust(false)
 	for i := 1; i < 5; i++ {
 		message := make([]byte, 32)
 		rand.Read(message)
@@ -39,11 +39,11 @@ func TestSignVerifyWrongKey(t *testing.T) {
 		PKseed := make([]byte, 32)
 		rand.Read(SKseed)
 
-		PK := params.Ht_PKgen(SKseed, PKseed)
+		PK := Ht_PKgen(params, SKseed, PKseed)
 
-		signature := params.Ht_sign(message, SKseed, PKseed, 0, 0)
+		signature := Ht_sign(params, message, SKseed, PKseed, 0, 0)
 
-		if (params.Ht_verify(wrongMessage, signature, PKseed, 0, 0, PK)) {
+		if (Ht_verify(params, wrongMessage, signature, PKseed, 0, 0, PK)) {
 			t.Errorf("Verification of signed message failed, but was expected to succeed!")
 		}
 	}

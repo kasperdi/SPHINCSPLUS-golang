@@ -8,8 +8,6 @@ import (
 	"../util"
 )
 
-type XmssParams parameters.Parameters
-
 type XMSSSignature struct {
 	wotsSignature []byte
 	AUTH []byte
@@ -23,7 +21,7 @@ func (s *XMSSSignature) GetXMSSAUTH() []byte {
 	return s.AUTH
 }
 
-func (params *XmssParams) treehash(SKseed []byte, startIndex int, targetNodeHeight int, PKseed []byte, adrs *address.ADRS) []byte {
+func treehash(params *parameters.Parameters, SKseed []byte, startIndex int, targetNodeHeight int, PKseed []byte, adrs *address.ADRS) []byte {
 	if startIndex % (1 << targetNodeHeight) != 0 {
 		return nil
 	}
@@ -33,8 +31,7 @@ func (params *XmssParams) treehash(SKseed []byte, startIndex int, targetNodeHeig
 	for i := 0; i < int(math.Pow(2, float64(targetNodeHeight))); i++ {
 		adrs.SetType(address.WOTS_HASH)
 		adrs.SetKeyPairAddress(startIndex + i)
-		wotsParams := wots.WotsParams(*params)
-		node := wotsParams.Wots_PKgen(SKseed, PKseed, adrs)
+		node := wots.Wots_PKgen(params, SKseed, PKseed, adrs)
 		adrs.SetType(address.TREE)
 		adrs.SetTreeHeight(1)
 		adrs.SetTreeIndex(startIndex + i)
@@ -50,34 +47,32 @@ func (params *XmssParams) treehash(SKseed []byte, startIndex int, targetNodeHeig
 	return stack.Pop().Node
 }
 
-func (params *XmssParams) Xmss_PKgen(SKseed []byte, PKseed []byte, adrs *address.ADRS) []byte {
-	return params.treehash(SKseed, 0, params.Hprime, PKseed, adrs)
+func Xmss_PKgen(params *parameters.Parameters, SKseed []byte, PKseed []byte, adrs *address.ADRS) []byte {
+	return treehash(params, SKseed, 0, params.Hprime, PKseed, adrs)
 }
 
-func (params *XmssParams) Xmss_sign(M []byte, SKseed []byte, idx int, PKseed []byte, adrs *address.ADRS) *XMSSSignature {
+func Xmss_sign(params *parameters.Parameters, M []byte, SKseed []byte, idx int, PKseed []byte, adrs *address.ADRS) *XMSSSignature {
 	AUTH := make([]byte, params.Hprime * params.N)
 	for i := 0; i < params.Hprime; i++ {
 		k := int(math.Floor(float64(idx) / math.Pow(2, float64(i)))) ^ 1
-		copy(AUTH[i * params.N:], params.treehash(SKseed, k * int(math.Pow(2, float64(i))), i, PKseed, adrs))
+		copy(AUTH[i * params.N:], treehash(params, SKseed, k * int(math.Pow(2, float64(i))), i, PKseed, adrs))
 	}
 	
 	adrs.SetType(address.WOTS_HASH)
 	adrs.SetKeyPairAddress(idx)
-	wotsParams := wots.WotsParams(*params)
-	sig := wotsParams.Wots_sign(M, SKseed, PKseed, adrs)
+	sig := wots.Wots_sign(params, M, SKseed, PKseed, adrs)
 	
 	return &XMSSSignature{sig, AUTH}
 }
 
-func (params *XmssParams) Xmss_pkFromSig(idx int, SIG_XMSS *XMSSSignature, M []byte, PKseed []byte, adrs *address.ADRS) []byte {
+func Xmss_pkFromSig(params *parameters.Parameters, idx int, SIG_XMSS *XMSSSignature, M []byte, PKseed []byte, adrs *address.ADRS) []byte {
 	// compute WOTS+ pk from WOTS+ sig
 	adrs.SetType(address.WOTS_HASH)
 	adrs.SetKeyPairAddress(idx)
 	sig := SIG_XMSS.GetWOTSSig()
 	AUTH := SIG_XMSS.GetXMSSAUTH()
 	
-	wotsParams := wots.WotsParams(*params)
-	node0 := wotsParams.Wots_pkFromSig(sig, M, PKseed, adrs)
+	node0 := wots.Wots_pkFromSig(params, sig, M, PKseed, adrs)
 	node1 := make([]byte, 0)
 
 	// compute root from WOTS+ pk and AUTH

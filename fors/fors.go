@@ -7,8 +7,6 @@ import (
 	"../parameters"
 )
 
-type ForsParams parameters.Parameters
-
 type FORSSignature struct {
 	Forspkauth []*TreePKAUTH
 }
@@ -27,14 +25,14 @@ func (s *FORSSignature) GetAUTH(index int) []byte {
 }
 
 
-func (params *ForsParams) Fors_SKgen(SKseed []byte, adrs *address.ADRS, idx int) []byte {
+func Fors_SKgen(params *parameters.Parameters, SKseed []byte, adrs *address.ADRS, idx int) []byte {
 	adrs.SetTreeHeight(0)
 	adrs.SetTreeIndex(idx)
 	sk := params.Tweak.PRF(SKseed, adrs)
 	return sk
 }
 
-func (params *ForsParams) Fors_treehash(SKseed []byte, startIndex int, targetNodeHeight int, PKseed []byte, adrs *address.ADRS) []byte {
+func Fors_treehash(params *parameters.Parameters, SKseed []byte, startIndex int, targetNodeHeight int, PKseed []byte, adrs *address.ADRS) []byte {
 	if startIndex % (1 << targetNodeHeight) != 0 {
 		return nil
 	}
@@ -63,12 +61,12 @@ func (params *ForsParams) Fors_treehash(SKseed []byte, startIndex int, targetNod
 	return stack.Pop().Node
 }
 
-func (params *ForsParams) Fors_PKgen(SKseed []byte, PKseed []byte, adrs *address.ADRS) []byte {
+func Fors_PKgen(params *parameters.Parameters, SKseed []byte, PKseed []byte, adrs *address.ADRS) []byte {
 	forsPKadrs := adrs.Copy()
 	root := make([]byte, params.K*params.N)
 	
 	for i := 0; i < params.K; i++ {
-		copy(root[i * params.N:], params.Fors_treehash(SKseed, i*params.T, params.A, PKseed, adrs))
+		copy(root[i * params.N:], Fors_treehash(params, SKseed, i*params.T, params.A, PKseed, adrs))
 	}
 	forsPKadrs.SetType(address.FORS_ROOTS)
 	forsPKadrs.SetKeyPairAddress(adrs.GetKeyPairAddress())
@@ -78,13 +76,13 @@ func (params *ForsParams) Fors_PKgen(SKseed []byte, PKseed []byte, adrs *address
 }
 
 // Taken from reference implementation and converted into Go code
-func (params *ForsParams) message_to_indices(M []byte) []int {
+func message_to_indices(M []byte, k int, a int) []int {
     offset := 0
-	indices := make([]int, params.K)
+	indices := make([]int, k)
 
-    for i := 0; i < params.K; i++ {
+    for i := 0; i < k; i++ {
         indices[i] = 0
-        for j := 0; j < params.A; j++ {
+        for j := 0; j < a; j++ {
             indices[i] ^= ((int(M[offset >> 3]) >> (offset & 0x7)) & 0x1) << j
             offset++
         }
@@ -93,14 +91,14 @@ func (params *ForsParams) message_to_indices(M []byte) []int {
 }
 
 
-func (params *ForsParams) Fors_sign(M []byte, SKseed []byte, PKseed []byte, adrs *address.ADRS) *FORSSignature {
+func Fors_sign(params *parameters.Parameters, M []byte, SKseed []byte, PKseed []byte, adrs *address.ADRS) *FORSSignature {
 	// compute signature elements
 	SIG_FORS := new(FORSSignature)
 
 	for i := 0; i < params.K; i++ {
 		// get next index
 		// unsigned int idx = bits i*log(t) to (i+1)*log(t) - 1 of M;
-		indices := params.message_to_indices(M)
+		indices := message_to_indices(M, params.K, params.A)
 		
 		// pick private key element
 		adrs.SetTreeHeight(0)
@@ -110,7 +108,7 @@ func (params *ForsParams) Fors_sign(M []byte, SKseed []byte, PKseed []byte, adrs
 		AUTH := make([]byte, params.A*params.N)
 		for j := 0; j < params.A; j++ {
 			s := int(math.Floor(float64(indices[i])/math.Pow(2, float64(j)))) ^ 1
-			test := params.Fors_treehash(SKseed, i * params.T + s * int(math.Pow(2, float64(j))), j, PKseed, adrs)
+			test := Fors_treehash(params, SKseed, i * params.T + s * int(math.Pow(2, float64(j))), j, PKseed, adrs)
 
 			copy(AUTH[j * params.N:], test)
 		}
@@ -120,11 +118,11 @@ func (params *ForsParams) Fors_sign(M []byte, SKseed []byte, PKseed []byte, adrs
 	return SIG_FORS
 }
 
-func (params *ForsParams) Fors_pkFromSig(SIG_FORS *FORSSignature, M []byte, PKseed []byte, adrs *address.ADRS) []byte {
+func Fors_pkFromSig(params *parameters.Parameters, SIG_FORS *FORSSignature, M []byte, PKseed []byte, adrs *address.ADRS) []byte {
 	root := make([]byte, params.K * params.N)
 	for i := 0; i < params.K; i++ {
 		// get next index
-		indices := params.message_to_indices(M)
+		indices := message_to_indices(M, params.K, params.A)
 
 		// compute leaf
 		sk := SIG_FORS.GetSK(i)
