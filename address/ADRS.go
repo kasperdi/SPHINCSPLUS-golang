@@ -47,25 +47,25 @@ func (adrs *ADRS) GetBytes() []byte {
 
     switch adrs.GetType() {
     case WOTS_HASH:
-        copy(ADRSc[10:14], adrs.KeyPairAddress[:])
-        copy(ADRSc[14:18], adrs.ChainAddress[:])
-        copy(ADRSc[18:22], adrs.HashAddress[:])
+        copy(ADRSc[20:24], adrs.KeyPairAddress[:])
+        copy(ADRSc[24:28], adrs.ChainAddress[:])
+        copy(ADRSc[28:32], adrs.HashAddress[:])
     case WOTS_PK:
-        copy(ADRSc[10:14], adrs.KeyPairAddress[:])
-        copy(ADRSc[14:18], make([]byte, 4))
-        copy(ADRSc[18:22], make([]byte, 4))
+        copy(ADRSc[20:24], adrs.KeyPairAddress[:])
+        copy(ADRSc[24:28], make([]byte, 4))
+        copy(ADRSc[28:32], make([]byte, 4))
     case TREE:
-        copy(ADRSc[10:14], make([]byte, 4))
-        copy(ADRSc[14:18], adrs.TreeHeight[:])
-        copy(ADRSc[18:22], adrs.TreeIndex[:])
+        copy(ADRSc[20:24], make([]byte, 4))
+        copy(ADRSc[24:28], adrs.TreeHeight[:])
+        copy(ADRSc[28:32], adrs.TreeIndex[:])
     case FORS_TREE:
-        copy(ADRSc[10:14], adrs.KeyPairAddress[:])
-        copy(ADRSc[14:18], adrs.TreeHeight[:])
-        copy(ADRSc[18:22], adrs.TreeIndex[:])
+        copy(ADRSc[20:24], adrs.KeyPairAddress[:])
+        copy(ADRSc[24:28], adrs.TreeHeight[:])
+        copy(ADRSc[28:32], adrs.TreeIndex[:])
     case FORS_ROOTS:
-        copy(ADRSc[10:14], adrs.KeyPairAddress[:])
-        copy(ADRSc[14:18], make([]byte, 4))
-        copy(ADRSc[18:22], make([]byte, 4))
+        copy(ADRSc[20:24], adrs.KeyPairAddress[:])
+        copy(ADRSc[24:28], make([]byte, 4))
+        copy(ADRSc[28:32], make([]byte, 4))
     }
 
     return ADRSc

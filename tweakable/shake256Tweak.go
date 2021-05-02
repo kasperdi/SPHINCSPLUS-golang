@@ -40,7 +40,8 @@ func (h *Shake256Tweak) PRFmsg(SKprf []byte, OptRand []byte, M []byte) []byte {
 	hash := sha3.NewShake256()
 	hash.Write(SKprf)
     hash.Write(OptRand)
-	hash.Read(M)
+	hash.Write(M)
+	hash.Read(output)
 	return output
 }
 
@@ -59,7 +60,8 @@ func (h *Shake256Tweak) F(PKseed []byte, adrs *address.ADRS, tmp []byte) []byte 
 	hash := sha3.NewShake256()
 	hash.Write(PKseed)
     hash.Write(adrs.GetBytes())
-	hash.Read(M1)
+	hash.Write(M1)
+	hash.Read(output)
 	return output
 }
 
