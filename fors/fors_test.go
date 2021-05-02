@@ -83,7 +83,7 @@ func testSignFixed(t *testing.T, params *parameters.Parameters, SphincsVariant s
 	}
 }
 
-func TestSha256n256fRobust(t *testing.T) {
+func TestSha256n256fRobustDerivePK(t *testing.T) {
 	params := parameters.MakeSphincsPlusSHA256256fRobust(false)
 	msg := "Nola pustulata, the sharp-blotched nola, is a species of nolid moth in the family Nolidae."
 	PKseed := make([]byte, 32)
@@ -91,7 +91,6 @@ func TestSha256n256fRobust(t *testing.T) {
 		PKseed[i] = byte(i);
 	}
 	SKseed := make([]byte, 32)
-
 	var adrs address.ADRS
 	adrs.SetType(address.FORS_TREE)
 
@@ -100,21 +99,17 @@ func TestSha256n256fRobust(t *testing.T) {
 	msgAsBytes := []byte(msg)
 
 	signature := Fors_sign(params, msgAsBytes, SKseed, PKseed, &adrs)
-
 	pkFromSig := Fors_pkFromSig(params, signature, msgAsBytes, PKseed, &adrs)
-
 	pkFromRefImpl := "efcc07e6dcfa255faa8b8a9f79cf55eef7632bd26fe195c61db17e9f27981c4b"
-
 	originalPKHex := hex.EncodeToString(pk1)
 
 	if(!bytes.Equal(pkFromSig, pk1)) {
 		t.Errorf("Expected PK: %s, but got PK: %s", originalPKHex, hex.EncodeToString(pkFromSig))
 	}
-	
+
 	if(pkFromRefImpl != originalPKHex) {
 		t.Errorf("Expected PK: %s, but got PK: %s", pkFromRefImpl, originalPKHex)
 	}
-
 }
 
 // Tests that signed messages can be verified with the correct signature
