@@ -5,51 +5,89 @@ import (
 	"encoding/hex"
 	"crypto/rand"
 	"fmt"
+	"io/ioutil"
 	"../parameters"
 	"../hypertree"
 )
 
-func TestSha256n256fRobust(t *testing.T) {
-	params := parameters.MakeSphincsPlusSHA256256fRobust(false)
-	
-	skprf, _ := hex.DecodeString("47616c696e736f676120737562646973636f6964656120697320612072617265")
+func TestSphincsPlus(t *testing.T) {
+	cases := []struct {
+		Param *parameters.Parameters
+		SphincsVariant string
+	} {
+		{Param: parameters.MakeSphincsPlusSHA256256fRobust(false), SphincsVariant: "SHA256256f-Robust"},
+		//{Param: parameters.MakeSphincsPlusSHA256256sRobust(false), SphincsVariant: "SHA256256s-Robust"},
+		//{Param: parameters.MakeSphincsPlusSHA256256fSimple(false), SphincsVariant: "SHA256256f-Simple"},
+		//{Param: parameters.MakeSphincsPlusSHA256256sSimple(false), SphincsVariant: "SHA256256s-Simple"},
 
+		//{Param: parameters.MakeSphincsPlusSHA256192fRobust(false), SphincsVariant: "SHA256192f-Robust"},
+		//{Param: parameters.MakeSphincsPlusSHA256192sRobust(false), SphincsVariant: "SHA256192s-Robust"},
+		//{Param: parameters.MakeSphincsPlusSHA256192fSimple(false), SphincsVariant: "SHA256192f-Simple"},
+		//{Param: parameters.MakeSphincsPlusSHA256192sSimple(false), SphincsVariant: "SHA256192s-Simple"},
+
+		//{Param: parameters.MakeSphincsPlusSHA256128fRobust(false), SphincsVariant: "SHA256128f-Robust"},
+		//{Param: parameters.MakeSphincsPlusSHA256128sRobust(false), SphincsVariant: "SHA256128s-Robust"},
+		//{Param: parameters.MakeSphincsPlusSHA256128fSimple(false), SphincsVariant: "SHA256128f-Simple"},
+		//{Param: parameters.MakeSphincsPlusSHA256128sSimple(false), SphincsVariant: "SHA256128s-Simple"},
+
+		//{Param: parameters.MakeSphincsPlusSHAKE256256fRobust(false), SphincsVariant: "SHAKE256256f-Robust"},
+		//{Param: parameters.MakeSphincsPlusSHAKE256256sRobust(false), SphincsVariant: "SHAKE256256s-Robust"},
+		//{Param: parameters.MakeSphincsPlusSHAKE256256fSimple(false), SphincsVariant: "SHAKE256256f-Simple"},
+		//{Param: parameters.MakeSphincsPlusSHAKE256256sSimple(false), SphincsVariant: "SHAKE256256s-Simple"},
+
+		//{Param: parameters.MakeSphincsPlusSHAKE256192fRobust(false), SphincsVariant: "SHAKE256192f-Robust"},
+		//{Param: parameters.MakeSphincsPlusSHAKE256192sRobust(false), SphincsVariant: "SHAKE256192s-Robust"},
+		//{Param: parameters.MakeSphincsPlusSHAKE256192fSimple(false), SphincsVariant: "SHAKE256192f-Simple"},
+		//{Param: parameters.MakeSphincsPlusSHAKE256192sSimple(false), SphincsVariant: "SHAKE256192s-Simple"},
+
+		//{Param: parameters.MakeSphincsPlusSHAKE256128fRobust(false), SphincsVariant: "SHAKE256128f-Robust"},
+		//{Param: parameters.MakeSphincsPlusSHAKE256128sRobust(false), SphincsVariant: "SHAKE256128s-Robust"},
+		//{Param: parameters.MakeSphincsPlusSHAKE256128fSimple(false), SphincsVariant: "SHAKE256128f-Simple"},
+		//{Param: parameters.MakeSphincsPlusSHAKE256128sSimple(false), SphincsVariant: "SHAKE256128s-Simple"},
+
+	}
+
+	for _, paramVal := range cases {
+		t.Run(fmt.Sprintf("Spx_sig %s", paramVal.SphincsVariant), func(t *testing.T) { testSignFixed(t, paramVal.Param, paramVal.SphincsVariant) })
+	}
+}
+
+func testSignFixed(t *testing.T, params *parameters.Parameters, SphincsVariant string) {
+	bytes, err := ioutil.ReadFile("expected_signatures/expected-spx-" + SphincsVariant + ".txt")
+	if err != nil {
+		t.Errorf("Expected result file missing!")
+		return
+	}
+	skprf, _ := hex.DecodeString("47616c696e736f676120737562646973636f6964656120697320612072617265")
 	pk := new(SPHINCS_PK)
 	pk.PKseed = make([]byte, params.N)
 	sk := new(SPHINCS_SK)
 	sk.PKseed = make([]byte, params.N)
 	sk.SKseed = make([]byte, params.N)
 	sk.SKprf = skprf
-
 	root := hypertree.Ht_PKgen(params, sk.SKseed, sk.PKseed)
-
 	pk.PKroot = root
 	sk.PKroot = root
 
-	text := "Galinsoga subdiscoidea is a rare"
-	bytesToSign := []byte(text)
+	message := []byte("Galinsoga subdiscoidea is a rare")
 
-	signature := Spx_sign(params, bytesToSign, sk)
-
-	if(!Spx_verify(params, bytesToSign, signature, pk)) {
-		t.Errorf("Verification failed, but was expected to succeed")
-	}
-
-	/* fmt.Println("Signature")
-	fmt.Print(hex.EncodeToString(signature.R))
+	signature := Spx_sign(params, message, sk)
+	SignatureAsString := ""
+	SignatureAsString += hex.EncodeToString(signature.R)
 	for i := 0; i < params.K; i++ {
-		fmt.Print(hex.EncodeToString(signature.SIG_FORS.GetSK(i)))
-		fmt.Print(hex.EncodeToString(signature.SIG_FORS.GetAUTH(i)))
+		SignatureAsString += hex.EncodeToString(signature.SIG_FORS.GetSK(i))
+		SignatureAsString += hex.EncodeToString(signature.SIG_FORS.GetAUTH(i))
 	}
-
 	for _, xmssSig := range signature.SIG_HT.XMSSSignatures {
-		fmt.Print(hex.EncodeToString(xmssSig.GetWOTSSig()))
-		fmt.Print(hex.EncodeToString(xmssSig.GetXMSSAUTH()))
+		SignatureAsString += hex.EncodeToString(xmssSig.GetWOTSSig())
+		SignatureAsString += hex.EncodeToString(xmssSig.GetXMSSAUTH())
 	}
-	
-	fmt.Println("")
 
-	t.Errorf("Verification failed, but was expected to succeed") */
+	expected := string(bytes)
+
+	if SignatureAsString != expected {
+		t.Errorf("Error: Got %s", SignatureAsString)
+	}
 }
 
 
@@ -70,6 +108,7 @@ func TestSignAndVerify(t *testing.T) {
 	
 }
 
+// ------- BENCHMARKING -------
 func BenchmarkSphincsPlus(b *testing.B) {
 	cases := []struct {
 		Param *parameters.Parameters
