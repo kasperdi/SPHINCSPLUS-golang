@@ -101,7 +101,7 @@ func TestSphincsPlus(t *testing.T) {
 	}
 
 	for _, paramVal := range cases {
-		t.Run(fmt.Sprintf("Keygen %s", paramVal.SphincsVariant), func(t *testing.T) { testSignFixed(t, paramVal.Param, paramVal.SphincsVariant) })
+		t.Run(fmt.Sprintf("Wots_sig %s", paramVal.SphincsVariant), func(t *testing.T) { testSignFixed(t, paramVal.Param, paramVal.SphincsVariant) })
 	}
 }
 
@@ -109,6 +109,7 @@ func testSignFixed(t *testing.T, params *parameters.Parameters, SphincsVariant s
 	bytes, err := ioutil.ReadFile("expected_signatures/expected-wots-" + SphincsVariant + ".txt")
 	if err != nil {
 		t.Errorf("Expected result file missing!")
+		return
 	}
 	tmp := make([]byte, params.N)
 	for i := 0; i < params.N; i++ {

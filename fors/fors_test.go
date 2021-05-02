@@ -5,9 +5,83 @@ import (
 	"crypto/rand"
 	"bytes"
 	"encoding/hex"
+	"io/ioutil"
+	"fmt"
 	"../address"
 	"../parameters"
 )
+
+func TestSphincsPlus(t *testing.T) {
+	cases := []struct {
+		Param *parameters.Parameters
+		SphincsVariant string
+	} {
+		{Param: parameters.MakeSphincsPlusSHA256256fRobust(false), SphincsVariant: "SHA256256f-Robust"},
+		{Param: parameters.MakeSphincsPlusSHA256256sRobust(false), SphincsVariant: "SHA256256s-Robust"},
+		{Param: parameters.MakeSphincsPlusSHA256256fSimple(false), SphincsVariant: "SHA256256f-Simple"},
+		{Param: parameters.MakeSphincsPlusSHA256256sSimple(false), SphincsVariant: "SHA256256s-Simple"},
+
+		{Param: parameters.MakeSphincsPlusSHA256192fRobust(false), SphincsVariant: "SHA256192f-Robust"},
+		{Param: parameters.MakeSphincsPlusSHA256192sRobust(false), SphincsVariant: "SHA256192s-Robust"},
+		{Param: parameters.MakeSphincsPlusSHA256192fSimple(false), SphincsVariant: "SHA256192f-Simple"},
+		{Param: parameters.MakeSphincsPlusSHA256192sSimple(false), SphincsVariant: "SHA256192s-Simple"},
+
+		{Param: parameters.MakeSphincsPlusSHA256128fRobust(false), SphincsVariant: "SHA256128f-Robust"},
+		{Param: parameters.MakeSphincsPlusSHA256128sRobust(false), SphincsVariant: "SHA256128s-Robust"},
+		{Param: parameters.MakeSphincsPlusSHA256128fSimple(false), SphincsVariant: "SHA256128f-Simple"},
+		{Param: parameters.MakeSphincsPlusSHA256128sSimple(false), SphincsVariant: "SHA256128s-Simple"},
+
+		{Param: parameters.MakeSphincsPlusSHAKE256256fRobust(false), SphincsVariant: "SHAKE256256f-Robust"},
+		{Param: parameters.MakeSphincsPlusSHAKE256256sRobust(false), SphincsVariant: "SHAKE256256s-Robust"},
+		{Param: parameters.MakeSphincsPlusSHAKE256256fSimple(false), SphincsVariant: "SHAKE256256f-Simple"},
+		{Param: parameters.MakeSphincsPlusSHAKE256256sSimple(false), SphincsVariant: "SHAKE256256s-Simple"},
+
+		{Param: parameters.MakeSphincsPlusSHAKE256192fRobust(false), SphincsVariant: "SHAKE256192f-Robust"},
+		{Param: parameters.MakeSphincsPlusSHAKE256192sRobust(false), SphincsVariant: "SHAKE256192s-Robust"},
+		{Param: parameters.MakeSphincsPlusSHAKE256192fSimple(false), SphincsVariant: "SHAKE256192f-Simple"},
+		{Param: parameters.MakeSphincsPlusSHAKE256192sSimple(false), SphincsVariant: "SHAKE256192s-Simple"},
+
+		{Param: parameters.MakeSphincsPlusSHAKE256128fRobust(false), SphincsVariant: "SHAKE256128f-Robust"},
+		{Param: parameters.MakeSphincsPlusSHAKE256128sRobust(false), SphincsVariant: "SHAKE256128s-Robust"},
+		{Param: parameters.MakeSphincsPlusSHAKE256128fSimple(false), SphincsVariant: "SHAKE256128f-Simple"},
+		{Param: parameters.MakeSphincsPlusSHAKE256128sSimple(false), SphincsVariant: "SHAKE256128s-Simple"},
+
+	}
+
+	for _, paramVal := range cases {
+		t.Run(fmt.Sprintf("Fors_sig %s", paramVal.SphincsVariant), func(t *testing.T) { testSignFixed(t, paramVal.Param, paramVal.SphincsVariant) })
+	}
+}
+
+func testSignFixed(t *testing.T, params *parameters.Parameters, SphincsVariant string) {
+	bytes, err := ioutil.ReadFile("expected_signatures/expected-fors-" + SphincsVariant + ".txt")
+	if err != nil {
+		t.Errorf("Expected result file missing!")
+		return
+	}
+	PKseed := make([]byte, params.N)
+	for i := 0; i < params.N; i++ {
+		PKseed[i] = byte(i);
+	}
+	SKseed := make([]byte, params.N)
+	var adrs address.ADRS
+	adrs.SetType(address.FORS_TREE)
+
+	message := []byte("Q7hCGZwbUtl2uAmRGKrfZSuMXWVF29xd9vxngkvXhEya5L5vtI2DRNbLn7BPgq9O")
+
+	signature := Fors_sign(params, message, SKseed, PKseed, &adrs)
+	SignatureAsString := ""
+	for i := 0; i < params.K; i++ {
+		SignatureAsString += hex.EncodeToString(signature.GetSK(i))
+		SignatureAsString += hex.EncodeToString(signature.GetAUTH(i))
+	} 
+
+	expected := string(bytes)
+
+	if SignatureAsString != expected {
+		t.Errorf("Error: Got %s", SignatureAsString)
+	}
+}
 
 func TestSha256n256fRobust(t *testing.T) {
 	params := parameters.MakeSphincsPlusSHA256256fRobust(false)
