@@ -102,7 +102,7 @@ func Fors_sign(params *parameters.Parameters, M []byte, SKseed []byte, PKseed []
 		
 		// pick private key element
 		adrs.SetTreeHeight(0)
-		adrs.SetTreeIndex(i*params.T + indices[i]) // Can the int(idx) give problems due to unsigned 64 bit -> signed int conversion
+		adrs.SetTreeIndex(i*params.T + indices[i])
 		PKElement := params.Tweak.PRF(SKseed, adrs)
 
 		AUTH := make([]byte, params.A*params.N)

@@ -9,7 +9,7 @@ import (
 
 type Sha256Tweak struct {
     Variant string
-    M2 int
+    MessageDigestLength int
     N int
 }
 
@@ -22,7 +22,7 @@ func (h *Sha256Tweak) Hmsg(R []byte, PKseed []byte, PKroot []byte, M []byte) []b
     hash.Write(PKroot)
     hash.Write(M)
     hashedConc := hash.Sum(nil)
-    bitmask := mgf1sha256(hashedConc, h.M2)
+    bitmask := mgf1sha256(hashedConc, h.MessageDigestLength)
     return bitmask
 }
 
@@ -45,7 +45,7 @@ func (h *Sha256Tweak) PRFmsg(SKprf []byte, OptRand []byte, M []byte) []byte {
 
 // Tweakable hash function F
 func (h *Sha256Tweak) F(PKseed []byte, adrs *address.ADRS, tmp []byte) []byte {
-    M1 := make([]byte, len(tmp))
+    var M1 []byte
     compressedADRS := compressADRS(adrs)
 
     if h.Variant == Robust {

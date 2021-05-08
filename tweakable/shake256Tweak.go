@@ -8,13 +8,13 @@ import (
 
 type Shake256Tweak struct {
     Variant string
-	M2 int
+	MessageDigestLength int
 	N int
 }
 
 // Tweakable hash function Hmsg
 func (h *Shake256Tweak) Hmsg(R []byte, PKseed []byte, PKroot []byte, M []byte) []byte {
-	output := make([]byte, h.M2)
+	output := make([]byte, h.MessageDigestLength)
 	hash := sha3.NewShake256()
 	hash.Write(R)
     hash.Write(PKseed)
@@ -47,7 +47,7 @@ func (h *Shake256Tweak) PRFmsg(SKprf []byte, OptRand []byte, M []byte) []byte {
 
 // Tweakable hash function F
 func (h *Shake256Tweak) F(PKseed []byte, adrs *address.ADRS, tmp []byte) []byte {
-	M1 := make([]byte, len(tmp))
+	var M1 []byte
 
     if h.Variant == Robust {
 		bitmask := generateBitmask(PKseed, adrs, 8*len(tmp))

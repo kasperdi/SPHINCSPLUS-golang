@@ -69,7 +69,6 @@ func testSignFixed(t *testing.T, params *parameters.Parameters, SphincsVariant s
 	sk.PKroot = root
 
 	message := []byte("EGfSg8kYRjvejx4QzVMOlr4PwzjjUeoim9tKEffzcsXw1ml8burlqHkA1tr4mVGp")
-	fmt.Println(len(message))
 
 	signature := Spx_sign(params, message, sk)
 	SignatureAsString := ""
