@@ -63,7 +63,7 @@ func Wots_sign(params *parameters.Parameters, message []byte, SKseed []byte, PKs
 	}
 
 	len2_bytes := int(math.Ceil( ( float64(params.Len2) * math.Log2(float64(params.W)) ) / 8 ))
-	msg = append(msg, util.Base_w(util.ToByte2(csum, len2_bytes), params.W, params.Len2)...)
+	msg = append(msg, util.Base_w(util.ToByte(uint64(csum), len2_bytes), params.W, params.Len2)...)
 
 	sig := make([]byte, params.Len * params.N)
 
@@ -94,7 +94,7 @@ func Wots_pkFromSig(params *parameters.Parameters, signature []byte, message []b
 
 	csum = csum << (8 - ((params.Len2*int(math.Log2(float64(params.W))))% 8))
 	len2_bytes := int(math.Ceil( ( float64(params.Len2) * math.Log2(float64(params.W)) ) / 8 ))
-	msg = append(msg, util.Base_w(util.ToByte2(csum, len2_bytes), params.W, params.Len2)...)
+	msg = append(msg, util.Base_w(util.ToByte(uint64(csum), len2_bytes), params.W, params.Len2)...)
 
 	tmp := make([]byte, params.Len * params.N)
 	

@@ -114,7 +114,7 @@ func mgf1sha256(seed []byte, length int) []byte {
     T := make([]byte, 0)
     counter := 0
     for len(T) < length {
-		C := util.ToByte(uint32(counter), 4) //i2osp equivalent to ToByte
+		C := util.ToByte(uint64(counter), 4) //i2osp equivalent to ToByte
         hash := sha256.New()
         hash.Write(seed)
         hash.Write(C)

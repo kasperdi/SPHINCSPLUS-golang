@@ -4,7 +4,7 @@ Implementation of the SPHINCS+ signature framework
 
 TODO list
 
-- [ ] Implementation
+- [X] Implementation
     - [X] SHA-256 tweakable hash function
     - [X] WOTS+
     - [X] XMSS
@@ -12,12 +12,13 @@ TODO list
     - [X] FORS+
     - [X] SPHINCS+
     - [X] SHAKE256 tweakable hash function
-    - [ ] Additional testing
+    - [X] Additional testing
 
 - [ ] Benchmarking
-    - [ ] SPHINCS<sup>+</sup>-SHA-256
-    - [ ] SPHINCS<sup>+</sup>-Haraka
+    - [X] SPHINCS<sup>+</sup>-SHA-256
+    - [X] SPHINCS<sup>+</sup>-SHAKE256
     - [ ] RSA
+    - [ ] Reference implementation of SPHINCS<sup>+</sup>
 
 - [X] Literature
      - [X] Read Round 3 NIST proposal

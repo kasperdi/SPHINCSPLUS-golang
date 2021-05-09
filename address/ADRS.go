@@ -73,20 +73,20 @@ func (adrs *ADRS) GetBytes() []byte {
 
 func (adrs *ADRS) SetLayerAddress(a int) { //uint32 eller int
 	var layerAddress [4]byte
-	copy(layerAddress[:], util.ToByte(uint32(a), 4))	
+	copy(layerAddress[:], util.ToByte(uint64(a), 4))	
     adrs.LayerAddress = layerAddress
 }
 
 func (adrs *ADRS) SetTreeAddress(a uint64) { //Allow 12 byte ints (big.Int)
 	var treeAddress [12]byte //This is not very clean
-	treeAddressBytes := util.ToByte3(a, 12)
+	treeAddressBytes := util.ToByte(a, 12)
 	copy(treeAddress[:], treeAddressBytes)
     adrs.TreeAddress = treeAddress
 }
 
 func (adrs *ADRS) SetType(a int) { //uint32 eller int
 	var typ [4]byte
-	copy(typ[:], util.ToByte(uint32(a), 4))
+	copy(typ[:], util.ToByte(uint64(a), 4))
     adrs.Type = typ
 	//Set the three last words to 0 as described in section 2.7.3
 	adrs.SetKeyPairAddress(0)
@@ -98,32 +98,32 @@ func (adrs *ADRS) SetType(a int) { //uint32 eller int
 
 func (adrs *ADRS) SetKeyPairAddress(a int) { //uint32 eller int
 	var keyPairAddress [4]byte
-	copy(keyPairAddress[:], util.ToByte(uint32(a), 4))
+	copy(keyPairAddress[:], util.ToByte(uint64(a), 4))
     adrs.KeyPairAddress = keyPairAddress
 }
 
 func (adrs *ADRS) SetTreeHeight(a int) { //uint32 eller int
 	var treeHeight [4]byte
-	copy(treeHeight[:], util.ToByte(uint32(a), 4))
+	copy(treeHeight[:], util.ToByte(uint64(a), 4))
     adrs.TreeHeight = treeHeight
 }
 
 func (adrs *ADRS) SetTreeIndex(a int) { //uint32 eller int
 	var treeIndex [4]byte
-	copy(treeIndex[:], util.ToByte(uint32(a), 4))
+	copy(treeIndex[:], util.ToByte(uint64(a), 4))
     adrs.TreeIndex = treeIndex
 }
 
 func (adrs *ADRS) SetChainAddress(a int) { //uint32 eller int
 	var chainAddress [4]byte
-	copy(chainAddress[:], util.ToByte(uint32(a), 4))
+	copy(chainAddress[:], util.ToByte(uint64(a), 4))
     adrs.ChainAddress = chainAddress
 }
 
 
 func (adrs *ADRS) SetHashAddress(a int) { //uint32 eller int
 	var hashAddress [4]byte
-	copy(hashAddress[:], util.ToByte(uint32(a), 4))
+	copy(hashAddress[:], util.ToByte(uint64(a), 4))
     adrs.HashAddress = hashAddress
 }
 
@@ -153,7 +153,7 @@ func (adrs *ADRS) GetType() int { //uint32 eller int
 
 func (adrs *ADRS) GetTreeAddress() int { //uint32 eller int
 	treeAddressBytes := adrs.TreeAddress[:]
-	treeAddressUint32 := binary.BigEndian.Uint32(treeAddressBytes)
-	return int(treeAddressUint32)
+	treeAddressUint64 := binary.BigEndian.Uint64(treeAddressBytes)
+	return int(treeAddressUint64)
 }
 

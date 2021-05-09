@@ -34,7 +34,7 @@ func TestCompressADRSType0(t *testing.T) {
 	layerAddress := [4]byte{0, 1, 2, 3}
 	treeAddress := [12]byte{4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15}
 	var typ [4]byte														// This is not very clean, fix maybe?
-	copy(typ[:], util.ToByte(uint32(0), 4))								// Type 0 corresponds to a WOTS+ hash address
+	copy(typ[:], util.ToByte(0, 4))								// Type 0 corresponds to a WOTS+ hash address
 	keyPairAddress := [4]byte{20, 21, 22, 23}
 	chainAddress := [4]byte{24, 25, 26, 27}
 	hashAddress := [4]byte{28, 29, 30, 31}
@@ -63,7 +63,7 @@ func TestCompressADRSType1(t *testing.T) {
 	layerAddress := [4]byte{0, 1, 2, 3}
 	treeAddress := [12]byte{4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15}
 	var typ [4]byte														// This is not very clean, fix maybe?
-	copy(typ[:], util.ToByte(uint32(1), 4))								// Type 0 corresponds to a WOTS+ hash address
+	copy(typ[:], util.ToByte(1, 4))								// Type 0 corresponds to a WOTS+ hash address
 	keyPairAddress := [4]byte{20, 21, 22, 23}
 
 	adrs := address.ADRS{

@@ -1,29 +1,10 @@
 package util
 
-import "encoding/binary"
-/* import "bytes" */
 import "math"
-/* import "fmt" */
 
-// For x and y non-negative intergers, toByte(x,y) returns the y-byte bytearray 
+// For x and y non-negative integers, toByte(x,y) returns the y-byte bytearray 
 // containing the binary representation of x in big-endian byte-order.
-func ToByte(x uint32, y uint) []byte {
-	buffer := make([]byte, y)
-	binary.BigEndian.PutUint32(buffer, x)
-	return buffer
-}
-
-
-func ToByte2(in int, outlen int) []byte {
-	out := make([]byte, outlen)
-	for i := outlen - 1; i >= 0; i-- {
-        out[i] = byte(in & 0xff);
-        in = in >> 8;
-    }
-	return out
-}
-
-func ToByte3(in uint64, outlen int) []byte {
+func ToByte(in uint64, outlen int) []byte {
 	out := make([]byte, outlen)
 	for i := outlen - 1; i >= 0; i-- {
         out[i] = byte(in & 0xff);
