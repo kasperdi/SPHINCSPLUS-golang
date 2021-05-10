@@ -50,6 +50,7 @@ func TestSphincsPlus(t *testing.T) {
 
 	for _, paramVal := range cases {
 		t.Run(fmt.Sprintf("Fors_sig %s", paramVal.SphincsVariant), func(t *testing.T) { testSignFixed(t, paramVal.Param, paramVal.SphincsVariant) })
+		t.Run(fmt.Sprintf("Fors_sig %s", paramVal.SphincsVariant), func(t *testing.T) { testSignAndVerify(t, paramVal.Param) })
 	}
 }
 
@@ -77,9 +78,34 @@ func testSignFixed(t *testing.T, params *parameters.Parameters, SphincsVariant s
 	} 
 
 	expected := string(bytes)
-
 	if SignatureAsString != expected {
 		t.Errorf("Error: Got %s", SignatureAsString)
+	}
+}
+
+// Tests that signed messages can be verified with the correct signature
+func testSignAndVerify(t *testing.T, params *parameters.Parameters) {
+	message := make([]byte, 64)
+	rand.Read(message)
+	SKseed := make([]byte, params.N)
+	rand.Read(SKseed)
+	PKseed := make([]byte, params.N)
+	rand.Read(SKseed)
+	var adrs address.ADRS
+	adrs.SetType(address.FORS_TREE)
+
+	PK := Fors_PKgen(params, SKseed, PKseed, &adrs)
+	signature := Fors_sign(params, message, SKseed, PKseed, &adrs)
+
+	pkFromSig := Fors_pkFromSig(params, signature, message, PKseed, &adrs) 
+	if(!bytes.Equal(pkFromSig, PK)) {
+		t.Errorf("Verification of signed message failed, but was expected to succeed!")
+	}
+
+	signature.Forspkauth[0].AUTH[0] ^= 1// Invalidate signature
+	pkFromSig2 := Fors_pkFromSig(params, signature, message, PKseed, &adrs) 
+	if(bytes.Equal(pkFromSig2, PK)) {
+		t.Errorf("Verification of signed message succeeded, but was expected to fail!")
 	}
 }
 
@@ -112,51 +138,11 @@ func TestSha256n256fRobustDerivePK(t *testing.T) {
 	}
 }
 
-// Tests that signed messages can be verified with the correct signature
-func TestSignAndVerify(t *testing.T) {
+func TestForsTreehashWrongArgs(t *testing.T) {
 	params := parameters.MakeSphincsPlusSHA256256fRobust(false)
-	for i := 0; i < 5; i++ {
-		message := make([]byte, 64)
-		rand.Read(message)
-		SKseed := make([]byte, params.N)
-		rand.Read(SKseed)
-		PKseed := make([]byte, params.N)
-		rand.Read(SKseed)
-		var adrs address.ADRS
-		adrs.SetType(address.FORS_TREE)
-
-		PK := Fors_PKgen(params, SKseed, PKseed, &adrs)
-
-		signature := Fors_sign(params, message, SKseed, PKseed, &adrs)
-
-		pkFromSig := Fors_pkFromSig(params, signature, message, PKseed, &adrs) 
-		if(!bytes.Equal(pkFromSig, PK)) {
-			t.Errorf("Verification of signed message failed, but was expected to succeed!")
-		}
-	}
-}
-
-func TestSignVerifyWrongKey(t *testing.T) {
-	params := parameters.MakeSphincsPlusSHA256256fRobust(false)
-	for i := 1; i < 5; i++ {
-		message := make([]byte, 64)
-		rand.Read(message)
-		wrongMessage := make([]byte, 64)
-		rand.Read(wrongMessage)
-		SKseed := make([]byte, params.N)
-		rand.Read(SKseed)
-		PKseed := make([]byte, params.N)
-		rand.Read(SKseed)
-		var adrs address.ADRS
-		adrs.SetType(address.FORS_TREE)
-
-		PK := Fors_PKgen(params, SKseed, PKseed, &adrs)
-
-		signature := Fors_sign(params, message, SKseed, PKseed, &adrs)
-
-		pkFromSig := Fors_pkFromSig(params, signature, wrongMessage, PKseed, &adrs) 
-		if(bytes.Equal(pkFromSig, PK)) {
-			t.Errorf("Verification of signed message failed, but was expected to succeed!")
-		}
+	var adrs address.ADRS
+	res := Fors_treehash(params, make([]byte, 32), 1, 1, make([]byte, 32), &adrs)
+	if res != nil {
+		t.Errorf("Expected nil as StartIndex + Steps > W-1, but got different result")
 	}
 }

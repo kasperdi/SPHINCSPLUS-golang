@@ -11,55 +11,12 @@ import (
 	"fmt"
 )
 
-// Tests that signed messages can be verified with the correct signature
-func TestSignAndVerify(t *testing.T) {
+func TestChainIndexStepsTooLow(t *testing.T) {
 	params := parameters.MakeSphincsPlusSHA256256fRobust(false)
-	for i := 0; i < 10; i++ {
-		message := make([]byte, params.N)
-		rand.Read(message)
-		SKseed := make([]byte, params.N)
-		rand.Read(SKseed)
-		PKseed := make([]byte, params.N)
-		rand.Read(SKseed)
-		var adrs address.ADRS  // Are 3 needed?
-
-		PK := Wots_PKgen(params, SKseed, PKseed, &adrs)
-
-		signature := Wots_sign(params ,message, SKseed, PKseed, &adrs)
-
-		pkFromSig := Wots_pkFromSig(params, signature, message, PKseed, &adrs)
-
-		if(!bytes.Equal(pkFromSig, PK)) {
-			t.Errorf("Verification of signed message failed, but was expected to succeed!")
-		}
-	}
-	
-}
-
-// Ensures that a wrong key cannot be used to verify a message
-func TestSignVerifyWrongKey(t *testing.T) {
-	params := parameters.MakeSphincsPlusSHA256256fRobust(false)
-	for i := 0; i < 10; i++ {
-		message := make([]byte, params.N)
-		rand.Read(message)
-		wrongMessage := make([]byte, params.N)
-		rand.Read(wrongMessage)
-		SKseed := make([]byte, params.N)
-		rand.Read(SKseed)
-		PKseed := make([]byte, params.N)
-		rand.Read(SKseed)
-		var adrs address.ADRS  // Are 3 needed?
-		var adrs2 address.ADRS
-		var adrs3 address.ADRS  
-
-		PK := Wots_PKgen(params, SKseed, PKseed, &adrs)
-
-		signature := Wots_sign(params, message, SKseed, PKseed, &adrs2)
-
-		pkFromSig := Wots_pkFromSig(params, signature, wrongMessage, PKseed, &adrs3)
-		if(bytes.Equal(pkFromSig, PK)) {
-			t.Errorf("Verification of signed message succeeded, but was expected to fail!")
-		}
+	var adrs address.ADRS
+	res := chain(params, make([]byte, 32), 100, 100, make([]byte, 32), &adrs)
+	if res != nil {
+		t.Errorf("Expected nil as StartIndex + Steps > W-1, but got different result")
 	}
 }
 
@@ -102,6 +59,7 @@ func TestSphincsPlus(t *testing.T) {
 
 	for _, paramVal := range cases {
 		t.Run(fmt.Sprintf("Wots_sig %s", paramVal.SphincsVariant), func(t *testing.T) { testSignFixed(t, paramVal.Param, paramVal.SphincsVariant) })
+		t.Run(fmt.Sprintf("Wots_sig %s", paramVal.SphincsVariant), func(t *testing.T) { testSignAndVerify(t, paramVal.Param) })
 	}
 }
 
@@ -126,4 +84,31 @@ func testSignFixed(t *testing.T, params *parameters.Parameters, SphincsVariant s
 	if SignatureAsString != expected {
 		t.Errorf("Error: Got %s", SignatureAsString)
 	}
+}
+
+// Tests that signed messages can be verified with the correct signature
+func testSignAndVerify(t *testing.T, params *parameters.Parameters) {
+	message := make([]byte, params.N)
+	rand.Read(message)
+	SKseed := make([]byte, params.N)
+	rand.Read(SKseed)
+	PKseed := make([]byte, params.N)
+	rand.Read(SKseed)
+	var adrs address.ADRS
+
+	PK := Wots_PKgen(params, SKseed, PKseed, &adrs)
+	signature := Wots_sign(params ,message, SKseed, PKseed, &adrs)
+	pkFromSig := Wots_pkFromSig(params, signature, message, PKseed, &adrs)
+
+	if(!bytes.Equal(pkFromSig, PK)) {
+		t.Errorf("Verification of signed message failed, but was expected to succeed!")
+	}
+
+	signature[0] ^= 1 // Invalidate signature
+	pkFromSig2 := Wots_pkFromSig(params, signature, message, PKseed, &adrs)
+
+	if(bytes.Equal(pkFromSig2, PK)) {
+		t.Errorf("Verification of signed message succeeded, but was expected to fail!")
+	}
+	
 }

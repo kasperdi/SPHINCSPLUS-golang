@@ -49,6 +49,7 @@ func TestSphincsPlus(t *testing.T) {
 
 	for _, paramVal := range cases {
 		t.Run(fmt.Sprintf("Spx_sig %s", paramVal.SphincsVariant), func(t *testing.T) { testSignFixed(t, paramVal.Param, paramVal.SphincsVariant) })
+		t.Run(fmt.Sprintf("Spx_sig %s", paramVal.SphincsVariant), func(t *testing.T) { testSignAndVerify(t, paramVal.Param) })
 	}
 }
 
@@ -89,19 +90,34 @@ func testSignFixed(t *testing.T, params *parameters.Parameters, SphincsVariant s
 }
 
 
-func TestSignAndVerify(t *testing.T) {
-	params := parameters.MakeSphincsPlusSHA256256fRobust(false)
-	for i := 0; i < 5; i++ {
+func testSignAndVerify(t *testing.T, params *parameters.Parameters) {
+	message := make([]byte, params.N)
+	rand.Read(message)
 
-		message := make([]byte, params.N)
-		rand.Read(message)
+	sk, pk := Spx_keygen(params)
+	signature := Spx_sign(params, message, sk)
 
-		sk, pk := Spx_keygen(params)
-		signature := Spx_sign(params, message, sk)
+	if(!Spx_verify(params, message, signature, pk)) {
+		t.Errorf("Verification failed, but was expected to succeed")
+	}
 
-		if(!Spx_verify(params, message, signature, pk)) {
-			t.Errorf("Verification failed, but was expected to succeed")
-		}
+	signature.R[0] ^= 1
+	if(Spx_verify(params, message, signature, pk)) {
+		t.Errorf("Verification succeeded, but was expected to fail")
+	}
+}
+
+func TestSignAndVerifyNondeterministic(t *testing.T) {
+	params := parameters.MakeSphincsPlusSHA256256fRobust(true)
+
+	message := make([]byte, params.N)
+	rand.Read(message)
+
+	sk, pk := Spx_keygen(params)
+	signature := Spx_sign(params, message, sk)
+
+	if(!Spx_verify(params, message, signature, pk)) {
+		t.Errorf("Verification failed, but was expected to succeed")
 	}
 	
 }
