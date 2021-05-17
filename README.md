@@ -14,11 +14,11 @@ TODO list
     - [X] SHAKE256 tweakable hash function
     - [X] Additional testing
 
-- [ ] Benchmarking
+- [X] Benchmarking
     - [X] SPHINCS<sup>+</sup>-SHA-256
     - [X] SPHINCS<sup>+</sup>-SHAKE256
-    - [ ] RSA
-    - [ ] Reference implementation of SPHINCS<sup>+</sup>
+    - [X] RSA
+    - [X] Reference implementation of SPHINCS<sup>+</sup>
 
 - [X] Literature
      - [X] Read Round 3 NIST proposal
@@ -26,7 +26,7 @@ TODO list
 
 - [ ] Report
     - [X] Literature review section
-    - [ ] Implementation section
+    - [X] Implementation section
     - [ ] Benchmarking section
     - [ ] Introduction
     - [ ] Discussion
