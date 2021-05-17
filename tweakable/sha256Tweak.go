@@ -90,10 +90,7 @@ func compressADRS(adrs *address.ADRS) []byte {
         copy(ADRSc[18:22], adrs.HashAddress[:])
     case address.WOTS_PK:
         copy(ADRSc[10:14], adrs.KeyPairAddress[:])
-        copy(ADRSc[14:18], make([]byte, 4))
-        copy(ADRSc[18:22], make([]byte, 4))
     case address.TREE:
-        copy(ADRSc[10:14], make([]byte, 4))
         copy(ADRSc[14:18], adrs.TreeHeight[:])
         copy(ADRSc[18:22], adrs.TreeIndex[:])
     case address.FORS_TREE:
@@ -102,8 +99,6 @@ func compressADRS(adrs *address.ADRS) []byte {
         copy(ADRSc[18:22], adrs.TreeIndex[:])
     case address.FORS_ROOTS:
         copy(ADRSc[10:14], adrs.KeyPairAddress[:])
-        copy(ADRSc[14:18], make([]byte, 4))
-        copy(ADRSc[18:22], make([]byte, 4))
     }
 
     return ADRSc

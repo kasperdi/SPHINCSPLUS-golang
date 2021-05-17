@@ -52,10 +52,7 @@ func (adrs *ADRS) GetBytes() []byte {
         copy(ADRSc[28:32], adrs.HashAddress[:])
     case WOTS_PK:
         copy(ADRSc[20:24], adrs.KeyPairAddress[:])
-        copy(ADRSc[24:28], make([]byte, 4))
-        copy(ADRSc[28:32], make([]byte, 4))
     case TREE:
-        copy(ADRSc[20:24], make([]byte, 4))
         copy(ADRSc[24:28], adrs.TreeHeight[:])
         copy(ADRSc[28:32], adrs.TreeIndex[:])
     case FORS_TREE:
@@ -64,8 +61,6 @@ func (adrs *ADRS) GetBytes() []byte {
         copy(ADRSc[28:32], adrs.TreeIndex[:])
     case FORS_ROOTS:
         copy(ADRSc[20:24], adrs.KeyPairAddress[:])
-        copy(ADRSc[24:28], make([]byte, 4))
-        copy(ADRSc[28:32], make([]byte, 4))
     }
 
     return ADRSc

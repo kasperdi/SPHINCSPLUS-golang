@@ -161,7 +161,7 @@ func BenchmarkSphincsPlus(b *testing.B) {
 	}
 
 	for _, paramVal := range cases {
-		b.Run(fmt.Sprintf("Keygen %s", paramVal.SphincsVariant), func(b *testing.B) { benchmarkKeygen(b, paramVal.Param) })
+		//b.Run(fmt.Sprintf("Keygen %s", paramVal.SphincsVariant), func(b *testing.B) { benchmarkKeygen(b, paramVal.Param) })
 		b.Run(fmt.Sprintf("Sign %s", paramVal.SphincsVariant), func(b *testing.B) { benchmarkSign(b, paramVal.Param) })
 		b.Run(fmt.Sprintf("Verify %s", paramVal.SphincsVariant), func(b *testing.B) { benchmarkVerify(b, paramVal.Param) })
 	}
