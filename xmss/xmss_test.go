@@ -69,7 +69,7 @@ func testSignAndVerify(t *testing.T, params *parameters.Parameters) {
 			t.Errorf("Verification of signed message failed, but was expected to succeed!")
 		}
 
-		signature.AUTH[0] ^= 1// Invalidate signature
+		signature.AUTH[0] ^= 1 // Invalidate signature
 		pkFromSig2 := Xmss_pkFromSig(params, 0, signature, message, PKseed, &adrs) 
 		if(bytes.Equal(pkFromSig2, PK)) {
 			t.Errorf("Verification of signed message succeeded, but was expected to fail!")

@@ -142,7 +142,7 @@ func Fors_pkFromSig(params *parameters.Parameters, SIG_FORS *FORSSignature, M []
 			if int(math.Floor(float64(indices[i]) / math.Pow(2, float64(j)))) % 2 == 0 {
 				adrs.SetTreeIndex(adrs.GetTreeIndex() / 2)
 
-				bytesToHash := make([]byte, params.N + len(node0)) // TODO: Could be cleaned by using a byte buffer, but is it faster?
+				bytesToHash := make([]byte, params.N + len(node0))
 				copy(bytesToHash, node0)
 				copy(bytesToHash[params.N:], auth[j * params.N:(j+1)*params.N])
 				
@@ -151,7 +151,7 @@ func Fors_pkFromSig(params *parameters.Parameters, SIG_FORS *FORSSignature, M []
 			} else {
 				adrs.SetTreeIndex((adrs.GetTreeIndex() - 1) / 2)
 
-				bytesToHash := make([]byte, params.N + len(node0)) // TODO: Could be cleaned by using a byte buffer, but is it faster?
+				bytesToHash := make([]byte, params.N + len(node0))
 				copy(bytesToHash, auth[j * params.N:(j+1)*params.N])
 				copy(bytesToHash[params.N:], node0)
 

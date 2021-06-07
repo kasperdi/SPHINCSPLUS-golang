@@ -66,20 +66,20 @@ func (adrs *ADRS) GetBytes() []byte {
     return ADRSc
 }
 
-func (adrs *ADRS) SetLayerAddress(a int) { //uint32 eller int
+func (adrs *ADRS) SetLayerAddress(a int) {
 	var layerAddress [4]byte
 	copy(layerAddress[:], util.ToByte(uint64(a), 4))	
     adrs.LayerAddress = layerAddress
 }
 
-func (adrs *ADRS) SetTreeAddress(a uint64) { //Allow 12 byte ints (big.Int)
-	var treeAddress [12]byte //This is not very clean
+func (adrs *ADRS) SetTreeAddress(a uint64) {
+	var treeAddress [12]byte
 	treeAddressBytes := util.ToByte(a, 12)
 	copy(treeAddress[:], treeAddressBytes)
     adrs.TreeAddress = treeAddress
 }
 
-func (adrs *ADRS) SetType(a int) { //uint32 eller int
+func (adrs *ADRS) SetType(a int) {
 	var typ [4]byte
 	copy(typ[:], util.ToByte(uint64(a), 4))
     adrs.Type = typ
@@ -91,62 +91,62 @@ func (adrs *ADRS) SetType(a int) { //uint32 eller int
 	adrs.SetTreeIndex(0)
 }
 
-func (adrs *ADRS) SetKeyPairAddress(a int) { //uint32 eller int
+func (adrs *ADRS) SetKeyPairAddress(a int) {
 	var keyPairAddress [4]byte
 	copy(keyPairAddress[:], util.ToByte(uint64(a), 4))
     adrs.KeyPairAddress = keyPairAddress
 }
 
-func (adrs *ADRS) SetTreeHeight(a int) { //uint32 eller int
+func (adrs *ADRS) SetTreeHeight(a int) {
 	var treeHeight [4]byte
 	copy(treeHeight[:], util.ToByte(uint64(a), 4))
     adrs.TreeHeight = treeHeight
 }
 
-func (adrs *ADRS) SetTreeIndex(a int) { //uint32 eller int
+func (adrs *ADRS) SetTreeIndex(a int) {
 	var treeIndex [4]byte
 	copy(treeIndex[:], util.ToByte(uint64(a), 4))
     adrs.TreeIndex = treeIndex
 }
 
-func (adrs *ADRS) SetChainAddress(a int) { //uint32 eller int
+func (adrs *ADRS) SetChainAddress(a int) {
 	var chainAddress [4]byte
 	copy(chainAddress[:], util.ToByte(uint64(a), 4))
     adrs.ChainAddress = chainAddress
 }
 
 
-func (adrs *ADRS) SetHashAddress(a int) { //uint32 eller int
+func (adrs *ADRS) SetHashAddress(a int) {
 	var hashAddress [4]byte
 	copy(hashAddress[:], util.ToByte(uint64(a), 4))
     adrs.HashAddress = hashAddress
 }
 
-func (adrs *ADRS) GetKeyPairAddress() int { //uint32 eller int
+func (adrs *ADRS) GetKeyPairAddress() int {
 	keyPairAddressBytes := adrs.KeyPairAddress[:]
 	keyPairAddressUint32 := binary.BigEndian.Uint32(keyPairAddressBytes)
 	return int(keyPairAddressUint32)
 }
 
-func (adrs *ADRS) GetTreeIndex() int { //uint32 eller int
+func (adrs *ADRS) GetTreeIndex() int {
 	treeIndexBytes := adrs.TreeIndex[:]
 	treeIndexUint32 := binary.BigEndian.Uint32(treeIndexBytes)
 	return int(treeIndexUint32)
 }
 
-func (adrs *ADRS) GetTreeHeight() int { //uint32 eller int
+func (adrs *ADRS) GetTreeHeight() int {
 	treeHeightBytes := adrs.TreeHeight[:]
 	treeHeightUint32 := binary.BigEndian.Uint32(treeHeightBytes)
 	return int(treeHeightUint32)
 }
 
-func (adrs *ADRS) GetType() int { //uint32 eller int
+func (adrs *ADRS) GetType() int {
 	typeBytes := adrs.Type[:]
 	typeUint32 := binary.BigEndian.Uint32(typeBytes)
 	return int(typeUint32)
 }
 
-func (adrs *ADRS) GetTreeAddress() int { //uint32 eller int
+func (adrs *ADRS) GetTreeAddress() int {
 	treeAddressBytes := adrs.TreeAddress[:]
 	treeAddressUint64 := binary.BigEndian.Uint64(treeAddressBytes)
 	return int(treeAddressUint64)

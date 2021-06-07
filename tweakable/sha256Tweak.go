@@ -13,7 +13,7 @@ type Sha256Tweak struct {
     N int
 }
 
-// Tweakable hash function Hmsg
+// Keyed hash function Hmsg
 func (h *Sha256Tweak) Hmsg(R []byte, PKseed []byte, PKroot []byte, M []byte) []byte {
 
     hash := sha256.New()
@@ -26,7 +26,7 @@ func (h *Sha256Tweak) Hmsg(R []byte, PKseed []byte, PKroot []byte, M []byte) []b
     return bitmask
 }
 
-// Tweakable hash function PRF
+// Pseudorandom function PRF
 func (h *Sha256Tweak) PRF(SEED []byte, adrs *address.ADRS) []byte {
     compressedADRS := compressADRS(adrs)
     hash := sha256.New()
@@ -35,7 +35,7 @@ func (h *Sha256Tweak) PRF(SEED []byte, adrs *address.ADRS) []byte {
     return hash.Sum(nil)[:h.N]
 }
 
-// Tweakable hash function PRFmsg
+// Pseudorandom function PRFmsg
 func (h *Sha256Tweak) PRFmsg(SKprf []byte, OptRand []byte, M []byte) []byte {
     mac := hmac.New(sha256.New, SKprf)
     mac.Write(OptRand)
@@ -104,7 +104,7 @@ func compressADRS(adrs *address.ADRS) []byte {
     return ADRSc
 }
 
-// Based on https://en.wikipedia.org/wiki/Mask_generation_function
+// Based on RFC 2437
 func mgf1sha256(seed []byte, length int) []byte {
     T := make([]byte, 0)
     counter := 0

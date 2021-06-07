@@ -10,7 +10,7 @@ import (
 )
 
 // Test of MGF1-SHA256
-func TestMgf1Sha256(t *testing.T) { //TODO: MORE TEST CASES, GENERATE DATA USING PYTHON IMPLEMENTATION
+func TestMgf1Sha256(t *testing.T) {
 	result := hex.EncodeToString(mgf1sha256([]byte("bar"), 50))
 	expected := "382576a7841021cc28fc4c0948753fb8312090cea942ea4c4e735d10dc724b155f9f6069f289d61daca0cb814502ef04eae1"
 	if (expected != result) {
@@ -33,7 +33,7 @@ func TestCompressADRSType0(t *testing.T) {
 	
 	layerAddress := [4]byte{0, 1, 2, 3}
 	treeAddress := [12]byte{4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15}
-	var typ [4]byte														// This is not very clean, fix maybe?
+	var typ [4]byte
 	copy(typ[:], util.ToByte(0, 4))								// Type 0 corresponds to a WOTS+ hash address
 	keyPairAddress := [4]byte{20, 21, 22, 23}
 	chainAddress := [4]byte{24, 25, 26, 27}
@@ -62,8 +62,8 @@ func TestCompressADRSType1(t *testing.T) {
 	
 	layerAddress := [4]byte{0, 1, 2, 3}
 	treeAddress := [12]byte{4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15}
-	var typ [4]byte														// This is not very clean, fix maybe?
-	copy(typ[:], util.ToByte(1, 4))								// Type 0 corresponds to a WOTS+ hash address
+	var typ [4]byte
+	copy(typ[:], util.ToByte(1, 4))
 	keyPairAddress := [4]byte{20, 21, 22, 23}
 
 	adrs := address.ADRS{

@@ -40,7 +40,7 @@ func Ht_sign(params *parameters.Parameters, M []byte, SKseed []byte, PKseed []by
 		// idx_leaf = (h / d) least significant bits of idx_tree;
 		idx_leaf = int(idx_tree % (1 << uint64(params.H/params.D)))
 		// idx_tree = (h - (j + 1) * (h / d)) most significant bits of idx_tree;
-		idx_tree = idx_tree >> (params.H/params.D) // Can this be changed to idx_tree >> parameters.H/parameters.D
+		idx_tree = idx_tree >> (params.H/params.D)
 		adrs.SetLayerAddress(j)
 		adrs.SetTreeAddress(idx_tree)
 		SIG_tmp = xmss.Xmss_sign(params, root, SKseed, idx_leaf, PKseed, adrs)
@@ -65,7 +65,7 @@ func Ht_verify(params *parameters.Parameters, M []byte, SIG_HT *HTSignature, PKs
 	
 	for j := 1; j < params.D; j++ {
 		idx_leaf = int(idx_tree % (1 << uint64(params.H/params.D)))
-		idx_tree = idx_tree >> (params.H/params.D) // Can this be changed to idx_tree >> parameters.H/parameters.D
+		idx_tree = idx_tree >> (params.H/params.D)
 		SIG_tmp = SIG_HT.GetXMSSSignature(j)
 		adrs.SetLayerAddress(j)
 		adrs.SetTreeAddress(idx_tree)

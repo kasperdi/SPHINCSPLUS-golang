@@ -12,7 +12,7 @@ type Shake256Tweak struct {
 	N int
 }
 
-// Tweakable hash function Hmsg
+// Keyed hash function Hmsg
 func (h *Shake256Tweak) Hmsg(R []byte, PKseed []byte, PKroot []byte, M []byte) []byte {
 	output := make([]byte, h.MessageDigestLength)
 	hash := sha3.NewShake256()
@@ -24,7 +24,7 @@ func (h *Shake256Tweak) Hmsg(R []byte, PKseed []byte, PKroot []byte, M []byte) [
 	return output
 }
 
-// Tweakable hash function PRF
+// Pseudorandom function PRF
 func (h *Shake256Tweak) PRF(SEED []byte, adrs *address.ADRS) []byte {
 	output := make([]byte, h.N)
 	hash := sha3.NewShake256()
@@ -34,7 +34,7 @@ func (h *Shake256Tweak) PRF(SEED []byte, adrs *address.ADRS) []byte {
 	return output
 }
 
-// Tweakable hash function PRFmsg
+// Pseudorandom function PRFmsg
 func (h *Shake256Tweak) PRFmsg(SKprf []byte, OptRand []byte, M []byte) []byte {
 	output := make([]byte, h.N)
 	hash := sha3.NewShake256()
