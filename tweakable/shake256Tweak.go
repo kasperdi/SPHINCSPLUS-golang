@@ -1,15 +1,15 @@
 package tweakable
 
 import (
+	"github.com/kasperdi/SPHINCSPLUS-golang/address"
+	"github.com/kasperdi/SPHINCSPLUS-golang/util"
 	"golang.org/x/crypto/sha3"
-	"../address"
-	"../util"
 )
 
 type Shake256Tweak struct {
-    Variant string
+	Variant             string
 	MessageDigestLength int
-	N int
+	N                   int
 }
 
 // Keyed hash function Hmsg
@@ -17,9 +17,9 @@ func (h *Shake256Tweak) Hmsg(R []byte, PKseed []byte, PKroot []byte, M []byte) [
 	output := make([]byte, h.MessageDigestLength)
 	hash := sha3.NewShake256()
 	hash.Write(R)
-    hash.Write(PKseed)
-    hash.Write(PKroot)
-    hash.Write(M)
+	hash.Write(PKseed)
+	hash.Write(PKroot)
+	hash.Write(M)
 	hash.Read(output)
 	return output
 }
@@ -29,7 +29,7 @@ func (h *Shake256Tweak) PRF(SEED []byte, adrs *address.ADRS) []byte {
 	output := make([]byte, h.N)
 	hash := sha3.NewShake256()
 	hash.Write(SEED)
-    hash.Write(adrs.GetBytes())
+	hash.Write(adrs.GetBytes())
 	hash.Read(output)
 	return output
 }
@@ -39,7 +39,7 @@ func (h *Shake256Tweak) PRFmsg(SKprf []byte, OptRand []byte, M []byte) []byte {
 	output := make([]byte, h.N)
 	hash := sha3.NewShake256()
 	hash.Write(SKprf)
-    hash.Write(OptRand)
+	hash.Write(OptRand)
 	hash.Write(M)
 	hash.Read(output)
 	return output
@@ -49,17 +49,17 @@ func (h *Shake256Tweak) PRFmsg(SKprf []byte, OptRand []byte, M []byte) []byte {
 func (h *Shake256Tweak) F(PKseed []byte, adrs *address.ADRS, tmp []byte) []byte {
 	var M1 []byte
 
-    if h.Variant == Robust {
+	if h.Variant == Robust {
 		bitmask := generateBitmask(PKseed, adrs, 8*len(tmp))
-        M1 = util.XorBytes(tmp, bitmask) 
-    } else if h.Variant == Simple {
-        M1 = tmp
-    }
-	
+		M1 = util.XorBytes(tmp, bitmask)
+	} else if h.Variant == Simple {
+		M1 = tmp
+	}
+
 	output := make([]byte, h.N)
 	hash := sha3.NewShake256()
 	hash.Write(PKseed)
-    hash.Write(adrs.GetBytes())
+	hash.Write(adrs.GetBytes())
 	hash.Write(M1)
 	hash.Read(output)
 	return output
@@ -71,7 +71,7 @@ func (h *Shake256Tweak) H(PKseed []byte, adrs *address.ADRS, tmp []byte) []byte 
 }
 
 // Tweakable hash function T_l
-func (h *Shake256Tweak) T_l(PKseed []byte, adrs *address.ADRS , tmp []byte) []byte {
+func (h *Shake256Tweak) T_l(PKseed []byte, adrs *address.ADRS, tmp []byte) []byte {
 	return h.F(PKseed, adrs, tmp)
 }
 
@@ -79,7 +79,7 @@ func generateBitmask(PKseed []byte, adrs *address.ADRS, messageLength int) []byt
 	output := make([]byte, messageLength)
 	hash := sha3.NewShake256()
 	hash.Write(PKseed)
-    hash.Write(adrs.GetBytes())
+	hash.Write(adrs.GetBytes())
 	hash.Read(output)
 	return output
 }

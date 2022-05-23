@@ -1,19 +1,20 @@
 package xmss
 
 import (
-	"testing"
-	"crypto/rand"
 	"bytes"
+	"crypto/rand"
 	"fmt"
-	"../address"
-	"../parameters"
+	"testing"
+
+	"github.com/kasperdi/SPHINCSPLUS-golang/address"
+	"github.com/kasperdi/SPHINCSPLUS-golang/parameters"
 )
 
 func TestSphincsPlus(t *testing.T) {
 	cases := []struct {
-		Param *parameters.Parameters
+		Param          *parameters.Parameters
 		SphincsVariant string
-	} {
+	}{
 		{Param: parameters.MakeSphincsPlusSHA256256fRobust(false), SphincsVariant: "SHA256256f-Robust"},
 		{Param: parameters.MakeSphincsPlusSHA256256sRobust(false), SphincsVariant: "SHA256256s-Robust"},
 		{Param: parameters.MakeSphincsPlusSHA256256fSimple(false), SphincsVariant: "SHA256256f-Simple"},
@@ -43,7 +44,6 @@ func TestSphincsPlus(t *testing.T) {
 		{Param: parameters.MakeSphincsPlusSHAKE256128sRobust(false), SphincsVariant: "SHAKE256128s-Robust"},
 		{Param: parameters.MakeSphincsPlusSHAKE256128fSimple(false), SphincsVariant: "SHAKE256128f-Simple"},
 		{Param: parameters.MakeSphincsPlusSHAKE256128sSimple(false), SphincsVariant: "SHAKE256128s-Simple"},
-
 	}
 
 	for _, paramVal := range cases {
@@ -64,14 +64,14 @@ func testSignAndVerify(t *testing.T, params *parameters.Parameters) {
 
 		PK := Xmss_PKgen(params, SKseed, PKseed, &adrs)
 		signature := Xmss_sign(params, message, SKseed, 0, PKseed, &adrs)
-		pkFromSig := Xmss_pkFromSig(params, 0, signature, message, PKseed, &adrs) 
-		if(!bytes.Equal(pkFromSig, PK)) {
+		pkFromSig := Xmss_pkFromSig(params, 0, signature, message, PKseed, &adrs)
+		if !bytes.Equal(pkFromSig, PK) {
 			t.Errorf("Verification of signed message failed, but was expected to succeed!")
 		}
 
 		signature.AUTH[0] ^= 1 // Invalidate signature
-		pkFromSig2 := Xmss_pkFromSig(params, 0, signature, message, PKseed, &adrs) 
-		if(bytes.Equal(pkFromSig2, PK)) {
+		pkFromSig2 := Xmss_pkFromSig(params, 0, signature, message, PKseed, &adrs)
+		if bytes.Equal(pkFromSig2, PK) {
 			t.Errorf("Verification of signed message succeeded, but was expected to fail!")
 		}
 	}
@@ -95,8 +95,8 @@ func TestSignVerifyUnevenIdx(t *testing.T) {
 
 	PK := Xmss_PKgen(params, SKseed, PKseed, &adrs)
 	signature := Xmss_sign(params, message, SKseed, 3, PKseed, &adrs)
-	pkFromSig := Xmss_pkFromSig(params, 3, signature, message, PKseed, &adrs) 
-	if(!bytes.Equal(pkFromSig, PK)) {
+	pkFromSig := Xmss_pkFromSig(params, 3, signature, message, PKseed, &adrs)
+	if !bytes.Equal(pkFromSig, PK) {
 		t.Errorf("Verification of signed message failed, but was expected to succeed!")
 	}
 }

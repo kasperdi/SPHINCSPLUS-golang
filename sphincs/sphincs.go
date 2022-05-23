@@ -3,12 +3,12 @@ package sphincs
 import (
 	"crypto/rand"
 	"math"
-	"../util"
-	"../parameters"
-	"../address"
-	"../hypertree"
-	"../fors"
 
+	"github.com/kasperdi/SPHINCSPLUS-golang/address"
+	"github.com/kasperdi/SPHINCSPLUS-golang/fors"
+	"github.com/kasperdi/SPHINCSPLUS-golang/hypertree"
+	"github.com/kasperdi/SPHINCSPLUS-golang/parameters"
+	"github.com/kasperdi/SPHINCSPLUS-golang/util"
 )
 
 type SPHINCS_PK struct {
@@ -18,16 +18,15 @@ type SPHINCS_PK struct {
 
 type SPHINCS_SK struct {
 	SKseed []byte
-	SKprf []byte
+	SKprf  []byte
 	PKseed []byte
 	PKroot []byte
 }
 
-
 type SPHINCS_SIG struct {
-	R []byte
+	R        []byte
 	SIG_FORS *fors.FORSSignature
-	SIG_HT *hypertree.HTSignature
+	SIG_HT   *hypertree.HTSignature
 }
 
 func (s *SPHINCS_SIG) GetR() []byte {
@@ -41,7 +40,6 @@ func (s *SPHINCS_SIG) GetSIG_FORS() *fors.FORSSignature {
 func (s *SPHINCS_SIG) GetSIG_HT() *hypertree.HTSignature {
 	return s.SIG_HT
 }
-
 
 func Spx_keygen(params *parameters.Parameters) (*SPHINCS_SK, *SPHINCS_PK) {
 	SKseed := make([]byte, params.N)
@@ -74,7 +72,7 @@ func Spx_sign(params *parameters.Parameters, M []byte, SK *SPHINCS_SK) *SPHINCS_
 
 	// generate randomizer
 	opt := make([]byte, params.N)
-	if (params.RANDOMIZE) {
+	if params.RANDOMIZE {
 		rand.Read(opt)
 	}
 
@@ -85,23 +83,22 @@ func Spx_sign(params *parameters.Parameters, M []byte, SK *SPHINCS_SK) *SPHINCS_
 
 	// compute message digest and index
 	digest := params.Tweak.Hmsg(R, SK.PKseed, SK.PKroot, M)
-	tmp_md_bytes := int(math.Floor(float64(params.K * params.A + 7) / 8))
-	tmp_idx_tree_bytes := int(math.Floor(float64(params.H - params.H / params.D + 7) / 8))
-	tmp_idx_leaf_bytes := int(math.Floor(float64(params.H / params.D + 7)) / 8)
+	tmp_md_bytes := int(math.Floor(float64(params.K*params.A+7) / 8))
+	tmp_idx_tree_bytes := int(math.Floor(float64(params.H-params.H/params.D+7) / 8))
+	tmp_idx_leaf_bytes := int(math.Floor(float64(params.H/params.D+7)) / 8)
 
 	tmp_md := digest[:tmp_md_bytes]
 	tmp_idx_tree := digest[tmp_md_bytes:(tmp_md_bytes + tmp_idx_tree_bytes)]
 	tmp_idx_leaf := digest[(tmp_md_bytes + tmp_idx_tree_bytes):(tmp_md_bytes + tmp_idx_tree_bytes + tmp_idx_leaf_bytes)]
 
-	idx_tree := uint64(util.BytesToUint64(tmp_idx_tree) & (math.MaxUint64 >> (64 - (params.H - params.H / params.D))))
-	idx_leaf := int(util.BytesToUint32(tmp_idx_leaf) & (math.MaxUint32 >> (32 - params.H / params.D)))
+	idx_tree := uint64(util.BytesToUint64(tmp_idx_tree) & (math.MaxUint64 >> (64 - (params.H - params.H/params.D))))
+	idx_leaf := int(util.BytesToUint32(tmp_idx_leaf) & (math.MaxUint32 >> (32 - params.H/params.D)))
 
 	// FORS sign
 	adrs.SetLayerAddress(0)
 	adrs.SetTreeAddress(idx_tree)
 	adrs.SetType(address.FORS_TREE)
 	adrs.SetKeyPairAddress(idx_leaf)
-
 
 	SIG.SIG_FORS = fors.Fors_sign(params, tmp_md, SK.SKseed, SK.PKseed, adrs)
 
@@ -123,17 +120,17 @@ func Spx_verify(params *parameters.Parameters, M []byte, SIG *SPHINCS_SIG, PK *S
 
 	// compute message digest and index
 	digest := params.Tweak.Hmsg(R, PK.PKseed, PK.PKroot, M)
-	tmp_md_bytes := int(math.Floor(float64(params.K * params.A + 7) / 8))
-	tmp_idx_tree_bytes := int(math.Floor(float64(params.H - params.H / params.D + 7) / 8))
-	tmp_idx_leaf_bytes := int(math.Floor(float64(params.H / params.D + 7)) / 8)
+	tmp_md_bytes := int(math.Floor(float64(params.K*params.A+7) / 8))
+	tmp_idx_tree_bytes := int(math.Floor(float64(params.H-params.H/params.D+7) / 8))
+	tmp_idx_leaf_bytes := int(math.Floor(float64(params.H/params.D+7)) / 8)
 
 	tmp_md := digest[:tmp_md_bytes]
 	tmp_idx_tree := digest[tmp_md_bytes:(tmp_md_bytes + tmp_idx_tree_bytes)]
 	tmp_idx_leaf := digest[(tmp_md_bytes + tmp_idx_tree_bytes):(tmp_md_bytes + tmp_idx_tree_bytes + tmp_idx_leaf_bytes)]
 
-	idx_tree := uint64(util.BytesToUint64(tmp_idx_tree) & (math.MaxUint64 >> (64 - (params.H - params.H / params.D))))
-	idx_leaf := int(util.BytesToUint32(tmp_idx_leaf) & (math.MaxUint32 >> (32 - params.H / params.D)))
-	
+	idx_tree := uint64(util.BytesToUint64(tmp_idx_tree) & (math.MaxUint64 >> (64 - (params.H - params.H/params.D))))
+	idx_leaf := int(util.BytesToUint32(tmp_idx_leaf) & (math.MaxUint32 >> (32 - params.H/params.D)))
+
 	// compute FORS public key
 	adrs.SetLayerAddress(0)
 	adrs.SetTreeAddress(idx_tree)

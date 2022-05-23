@@ -1,21 +1,22 @@
 package fors
 
 import (
-	"testing"
-	"crypto/rand"
 	"bytes"
+	"crypto/rand"
 	"encoding/hex"
-	"io/ioutil"
 	"fmt"
-	"../address"
-	"../parameters"
+	"io/ioutil"
+	"testing"
+
+	"github.com/kasperdi/SPHINCSPLUS-golang/address"
+	"github.com/kasperdi/SPHINCSPLUS-golang/parameters"
 )
 
 func TestSphincsPlus(t *testing.T) {
 	cases := []struct {
-		Param *parameters.Parameters
+		Param          *parameters.Parameters
 		SphincsVariant string
-	} {
+	}{
 		{Param: parameters.MakeSphincsPlusSHA256256fRobust(false), SphincsVariant: "SHA256256f-Robust"},
 		{Param: parameters.MakeSphincsPlusSHA256256sRobust(false), SphincsVariant: "SHA256256s-Robust"},
 		{Param: parameters.MakeSphincsPlusSHA256256fSimple(false), SphincsVariant: "SHA256256f-Simple"},
@@ -45,7 +46,6 @@ func TestSphincsPlus(t *testing.T) {
 		{Param: parameters.MakeSphincsPlusSHAKE256128sRobust(false), SphincsVariant: "SHAKE256128s-Robust"},
 		{Param: parameters.MakeSphincsPlusSHAKE256128fSimple(false), SphincsVariant: "SHAKE256128f-Simple"},
 		{Param: parameters.MakeSphincsPlusSHAKE256128sSimple(false), SphincsVariant: "SHAKE256128s-Simple"},
-
 	}
 
 	for _, paramVal := range cases {
@@ -62,7 +62,7 @@ func testSignFixed(t *testing.T, params *parameters.Parameters, SphincsVariant s
 	}
 	PKseed := make([]byte, params.N)
 	for i := 0; i < params.N; i++ {
-		PKseed[i] = byte(i);
+		PKseed[i] = byte(i)
 	}
 	SKseed := make([]byte, params.N)
 	var adrs address.ADRS
@@ -75,7 +75,7 @@ func testSignFixed(t *testing.T, params *parameters.Parameters, SphincsVariant s
 	for i := 0; i < params.K; i++ {
 		SignatureAsString += hex.EncodeToString(signature.GetSK(i))
 		SignatureAsString += hex.EncodeToString(signature.GetAUTH(i))
-	} 
+	}
 
 	expected := string(bytes)
 	if SignatureAsString != expected {
@@ -97,14 +97,14 @@ func testSignAndVerify(t *testing.T, params *parameters.Parameters) {
 	PK := Fors_PKgen(params, SKseed, PKseed, &adrs)
 	signature := Fors_sign(params, message, SKseed, PKseed, &adrs)
 
-	pkFromSig := Fors_pkFromSig(params, signature, message, PKseed, &adrs) 
-	if(!bytes.Equal(pkFromSig, PK)) {
+	pkFromSig := Fors_pkFromSig(params, signature, message, PKseed, &adrs)
+	if !bytes.Equal(pkFromSig, PK) {
 		t.Errorf("Verification of signed message failed, but was expected to succeed!")
 	}
 
-	signature.Forspkauth[0].AUTH[0] ^= 1// Invalidate signature
-	pkFromSig2 := Fors_pkFromSig(params, signature, message, PKseed, &adrs) 
-	if(bytes.Equal(pkFromSig2, PK)) {
+	signature.Forspkauth[0].AUTH[0] ^= 1 // Invalidate signature
+	pkFromSig2 := Fors_pkFromSig(params, signature, message, PKseed, &adrs)
+	if bytes.Equal(pkFromSig2, PK) {
 		t.Errorf("Verification of signed message succeeded, but was expected to fail!")
 	}
 }
@@ -114,7 +114,7 @@ func TestSha256n256fRobustDerivePK(t *testing.T) {
 	msg := "Nola pustulata, the sharp-blotched nola, is a species of nolid moth in the family Nolidae."
 	PKseed := make([]byte, 32)
 	for i := 0; i < 32; i++ {
-		PKseed[i] = byte(i);
+		PKseed[i] = byte(i)
 	}
 	SKseed := make([]byte, 32)
 	var adrs address.ADRS
@@ -129,11 +129,11 @@ func TestSha256n256fRobustDerivePK(t *testing.T) {
 	pkFromRefImpl := "efcc07e6dcfa255faa8b8a9f79cf55eef7632bd26fe195c61db17e9f27981c4b"
 	originalPKHex := hex.EncodeToString(pk1)
 
-	if(!bytes.Equal(pkFromSig, pk1)) {
+	if !bytes.Equal(pkFromSig, pk1) {
 		t.Errorf("Expected PK: %s, but got PK: %s", originalPKHex, hex.EncodeToString(pkFromSig))
 	}
 
-	if(pkFromRefImpl != originalPKHex) {
+	if pkFromRefImpl != originalPKHex {
 		t.Errorf("Expected PK: %s, but got PK: %s", pkFromRefImpl, originalPKHex)
 	}
 }

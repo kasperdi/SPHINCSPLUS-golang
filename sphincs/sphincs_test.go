@@ -1,20 +1,21 @@
 package sphincs
 
 import (
-	"testing"
-	"encoding/hex"
 	"crypto/rand"
+	"encoding/hex"
 	"fmt"
 	"io/ioutil"
-	"../parameters"
-	"../hypertree"
+	"testing"
+
+	"github.com/kasperdi/SPHINCSPLUS-golang/hypertree"
+	"github.com/kasperdi/SPHINCSPLUS-golang/parameters"
 )
 
 func TestSphincsPlus(t *testing.T) {
 	cases := []struct {
-		Param *parameters.Parameters
+		Param          *parameters.Parameters
 		SphincsVariant string
-	} {
+	}{
 		{Param: parameters.MakeSphincsPlusSHA256256fRobust(false), SphincsVariant: "SHA256256f-Robust"},
 		{Param: parameters.MakeSphincsPlusSHA256256sRobust(false), SphincsVariant: "SHA256256s-Robust"},
 		{Param: parameters.MakeSphincsPlusSHA256256fSimple(false), SphincsVariant: "SHA256256f-Simple"},
@@ -44,7 +45,6 @@ func TestSphincsPlus(t *testing.T) {
 		{Param: parameters.MakeSphincsPlusSHAKE256128sRobust(false), SphincsVariant: "SHAKE256128s-Robust"},
 		{Param: parameters.MakeSphincsPlusSHAKE256128fSimple(false), SphincsVariant: "SHAKE256128f-Simple"},
 		{Param: parameters.MakeSphincsPlusSHAKE256128sSimple(false), SphincsVariant: "SHAKE256128s-Simple"},
-
 	}
 
 	for _, paramVal := range cases {
@@ -89,7 +89,6 @@ func testSignFixed(t *testing.T, params *parameters.Parameters, SphincsVariant s
 	}
 }
 
-
 func testSignAndVerify(t *testing.T, params *parameters.Parameters) {
 	message := make([]byte, params.N)
 	rand.Read(message)
@@ -97,12 +96,12 @@ func testSignAndVerify(t *testing.T, params *parameters.Parameters) {
 	sk, pk := Spx_keygen(params)
 	signature := Spx_sign(params, message, sk)
 
-	if(!Spx_verify(params, message, signature, pk)) {
+	if !Spx_verify(params, message, signature, pk) {
 		t.Errorf("Verification failed, but was expected to succeed")
 	}
 
 	signature.R[0] ^= 1
-	if(Spx_verify(params, message, signature, pk)) {
+	if Spx_verify(params, message, signature, pk) {
 		t.Errorf("Verification succeeded, but was expected to fail")
 	}
 }
@@ -116,18 +115,18 @@ func TestSignAndVerifyNondeterministic(t *testing.T) {
 	sk, pk := Spx_keygen(params)
 	signature := Spx_sign(params, message, sk)
 
-	if(!Spx_verify(params, message, signature, pk)) {
+	if !Spx_verify(params, message, signature, pk) {
 		t.Errorf("Verification failed, but was expected to succeed")
 	}
-	
+
 }
 
 // ------- BENCHMARKING -------
 func BenchmarkSphincsPlus(b *testing.B) {
 	cases := []struct {
-		Param *parameters.Parameters
+		Param          *parameters.Parameters
 		SphincsVariant string
-	} {
+	}{
 		{Param: parameters.MakeSphincsPlusSHA256256fRobust(false), SphincsVariant: "SHA256256f-Robust"},
 		{Param: parameters.MakeSphincsPlusSHA256256sRobust(false), SphincsVariant: "SHA256256s-Robust"},
 		{Param: parameters.MakeSphincsPlusSHA256256fSimple(false), SphincsVariant: "SHA256256f-Simple"},
@@ -157,7 +156,6 @@ func BenchmarkSphincsPlus(b *testing.B) {
 		{Param: parameters.MakeSphincsPlusSHAKE256128sRobust(false), SphincsVariant: "SHAKE256128s-Robust"},
 		{Param: parameters.MakeSphincsPlusSHAKE256128fSimple(false), SphincsVariant: "SHAKE256128f-Simple"},
 		{Param: parameters.MakeSphincsPlusSHAKE256128sSimple(false), SphincsVariant: "SHAKE256128s-Simple"},
-
 	}
 
 	for _, paramVal := range cases {
@@ -168,7 +166,7 @@ func BenchmarkSphincsPlus(b *testing.B) {
 }
 
 func benchmarkKeygen(b *testing.B, params *parameters.Parameters) {
-	for i := 0; i < b.N; i++ {	
+	for i := 0; i < b.N; i++ {
 		Spx_keygen(params)
 	}
 }
@@ -179,10 +177,10 @@ func benchmarkSign(b *testing.B, params *parameters.Parameters) {
 	sk, _ := Spx_keygen(params)
 
 	b.ResetTimer()
-	for i := 0; i < b.N; i++ {	
+	for i := 0; i < b.N; i++ {
 		Spx_sign(params, message, sk)
 	}
-	
+
 }
 
 func benchmarkVerify(b *testing.B, params *parameters.Parameters) {
@@ -192,8 +190,7 @@ func benchmarkVerify(b *testing.B, params *parameters.Parameters) {
 	sig := Spx_sign(params, message, sk)
 
 	b.ResetTimer()
-	for i := 0; i < b.N; i++ {	
+	for i := 0; i < b.N; i++ {
 		Spx_verify(params, message, sig, pk)
 	}
 }
-

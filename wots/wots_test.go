@@ -1,14 +1,15 @@
 package wots
 
 import (
-	"testing"
+	"bytes"
 	"crypto/rand"
 	"encoding/hex"
-	"bytes"
-	"io/ioutil"
-	"../address"
-	"../parameters"
 	"fmt"
+	"io/ioutil"
+	"testing"
+
+	"github.com/kasperdi/SPHINCSPLUS-golang/address"
+	"github.com/kasperdi/SPHINCSPLUS-golang/parameters"
 )
 
 func TestChainIndexStepsTooLow(t *testing.T) {
@@ -22,9 +23,9 @@ func TestChainIndexStepsTooLow(t *testing.T) {
 
 func TestSphincsPlus(t *testing.T) {
 	cases := []struct {
-		Param *parameters.Parameters
+		Param          *parameters.Parameters
 		SphincsVariant string
-	} {
+	}{
 		{Param: parameters.MakeSphincsPlusSHA256256fRobust(false), SphincsVariant: "SHA256256f-Robust"},
 		{Param: parameters.MakeSphincsPlusSHA256256sRobust(false), SphincsVariant: "SHA256256s-Robust"},
 		{Param: parameters.MakeSphincsPlusSHA256256fSimple(false), SphincsVariant: "SHA256256f-Simple"},
@@ -54,7 +55,6 @@ func TestSphincsPlus(t *testing.T) {
 		{Param: parameters.MakeSphincsPlusSHAKE256128sRobust(false), SphincsVariant: "SHAKE256128s-Robust"},
 		{Param: parameters.MakeSphincsPlusSHAKE256128fSimple(false), SphincsVariant: "SHAKE256128f-Simple"},
 		{Param: parameters.MakeSphincsPlusSHAKE256128sSimple(false), SphincsVariant: "SHAKE256128s-Simple"},
-
 	}
 
 	for _, paramVal := range cases {
@@ -72,7 +72,7 @@ func testSignFixed(t *testing.T, params *parameters.Parameters, SphincsVariant s
 	message := []byte("YTwkwhkyJG3PMpDWlEvRuN0BppYASt3J")[:params.N]
 	PKSeed := make([]byte, params.N)
 	for i := 0; i < params.N; i++ {
-		PKSeed[i] = byte(i);
+		PKSeed[i] = byte(i)
 	}
 	SKseed := make([]byte, params.N)
 	var adrs address.ADRS
@@ -98,18 +98,18 @@ func testSignAndVerify(t *testing.T, params *parameters.Parameters) {
 	var adrs address.ADRS
 
 	PK := Wots_PKgen(params, SKseed, PKseed, &adrs)
-	signature := Wots_sign(params ,message, SKseed, PKseed, &adrs)
+	signature := Wots_sign(params, message, SKseed, PKseed, &adrs)
 	pkFromSig := Wots_pkFromSig(params, signature, message, PKseed, &adrs)
 
-	if(!bytes.Equal(pkFromSig, PK)) {
+	if !bytes.Equal(pkFromSig, PK) {
 		t.Errorf("Verification of signed message failed, but was expected to succeed!")
 	}
 
 	signature[0] ^= 1 // Invalidate signature
 	pkFromSig2 := Wots_pkFromSig(params, signature, message, PKseed, &adrs)
 
-	if(bytes.Equal(pkFromSig2, PK)) {
+	if bytes.Equal(pkFromSig2, PK) {
 		t.Errorf("Verification of signed message succeeded, but was expected to fail!")
 	}
-	
+
 }

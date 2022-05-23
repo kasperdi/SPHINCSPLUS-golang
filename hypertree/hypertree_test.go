@@ -1,17 +1,18 @@
 package hypertree
 
 import (
-	"testing"
 	"crypto/rand"
 	"fmt"
-	"../parameters"
+	"testing"
+
+	"github.com/kasperdi/SPHINCSPLUS-golang/parameters"
 )
 
 func TestSphincsPlus(t *testing.T) {
 	cases := []struct {
-		Param *parameters.Parameters
+		Param          *parameters.Parameters
 		SphincsVariant string
-	} {
+	}{
 		{Param: parameters.MakeSphincsPlusSHA256256fRobust(false), SphincsVariant: "SHA256256f-Robust"},
 		{Param: parameters.MakeSphincsPlusSHA256256sRobust(false), SphincsVariant: "SHA256256s-Robust"},
 		{Param: parameters.MakeSphincsPlusSHA256256fSimple(false), SphincsVariant: "SHA256256f-Simple"},
@@ -41,7 +42,6 @@ func TestSphincsPlus(t *testing.T) {
 		{Param: parameters.MakeSphincsPlusSHAKE256128sRobust(false), SphincsVariant: "SHAKE256128s-Robust"},
 		{Param: parameters.MakeSphincsPlusSHAKE256128fSimple(false), SphincsVariant: "SHAKE256128f-Simple"},
 		{Param: parameters.MakeSphincsPlusSHAKE256128sSimple(false), SphincsVariant: "SHAKE256128s-Simple"},
-
 	}
 
 	for _, paramVal := range cases {
@@ -60,14 +60,13 @@ func testSignAndVerify(t *testing.T, params *parameters.Parameters) {
 
 	PK := Ht_PKgen(params, SKseed, PKseed)
 	signature := Ht_sign(params, message, SKseed, PKseed, 0, 0)
-	if (!Ht_verify(params, message, signature, PKseed, 0, 0, PK)) {
+	if !Ht_verify(params, message, signature, PKseed, 0, 0, PK) {
 		t.Errorf("Verification of signed message failed, but was expected to succeed!")
 	}
 
 	signature.XMSSSignatures[0].AUTH[0] ^= 1 // Invalidate signature
-	if (Ht_verify(params, message, signature, PKseed, 0, 0, PK)) {
+	if Ht_verify(params, message, signature, PKseed, 0, 0, PK) {
 		t.Errorf("Verification of signed message succeeded, but was expected to fail!")
 	}
-
 
 }

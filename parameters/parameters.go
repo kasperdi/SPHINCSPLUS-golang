@@ -1,25 +1,26 @@
 package parameters
 
 import (
-	"../tweakable"
 	"math"
+
+	"github.com/kasperdi/SPHINCSPLUS-golang/tweakable"
 )
 
 type Parameters struct {
-	N int
-	W int
-	Hprime int 
-	H int
-	D int
-	K int
-	T int
-	LogT int
-	A int
+	N         int
+	W         int
+	Hprime    int
+	H         int
+	D         int
+	K         int
+	T         int
+	LogT      int
+	A         int
 	RANDOMIZE bool
-	Tweak tweakable.TweakableHashFunction
-	Len1 int
-	Len2 int
-	Len int
+	Tweak     tweakable.TweakableHashFunction
+	Len1      int
+	Len2      int
+	Len       int
 }
 
 // SHA256-robust and N = 32
@@ -106,7 +107,6 @@ func MakeSphincsPlusSHAKE256128sSimple(RANDOMIZE bool) *Parameters {
 	return MakeSphincsPlus(16, 16, 63, 7, 14, 12, "SHAKE256-simple", RANDOMIZE)
 }
 
-
 func MakeSphincsPlus(n int, w int, h int, d int, k int, logt int, hashFunc string, RANDOMIZE bool) *Parameters {
 	params := new(Parameters)
 	params.N = n
@@ -115,16 +115,16 @@ func MakeSphincsPlus(n int, w int, h int, d int, k int, logt int, hashFunc strin
 	params.D = d
 	params.K = k
 	params.LogT = logt
-	params.Hprime = params.H/params.D
+	params.Hprime = params.H / params.D
 	params.T = (1 << logt)
 	params.A = logt
 	params.RANDOMIZE = RANDOMIZE
-	params.Len1 = int(math.Ceil(8*float64(n)/math.Log2(float64(w))))
-	params.Len2 = int(math.Floor(math.Log2(float64(params.Len1 * (w - 1)))/math.Log2(float64(w))) + 1)
+	params.Len1 = int(math.Ceil(8 * float64(n) / math.Log2(float64(w))))
+	params.Len2 = int(math.Floor(math.Log2(float64(params.Len1*(w-1)))/math.Log2(float64(w))) + 1)
 	params.Len = params.Len1 + params.Len2
-	md_len := int(math.Floor((float64(params.K) * float64(logt) + 7) / 8))
-    idx_tree_len := int(math.Floor((float64(h - h / d + 7)) / 8))
-    idx_leaf_len := int(math.Floor(float64(h / d + 7)) / 8)
+	md_len := int(math.Floor((float64(params.K)*float64(logt) + 7) / 8))
+	idx_tree_len := int(math.Floor((float64(h - h/d + 7)) / 8))
+	idx_leaf_len := int(math.Floor(float64(h/d+7)) / 8)
 	m := md_len + idx_tree_len + idx_leaf_len
 	switch hashFunc {
 	case "SHA256-robust":
