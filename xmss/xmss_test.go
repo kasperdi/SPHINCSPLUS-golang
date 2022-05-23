@@ -10,6 +10,7 @@ import (
 	"github.com/kasperdi/SPHINCSPLUS-golang/parameters"
 )
 
+// Runs XMSS subtests for all 24 variants.
 func TestSphincsPlus(t *testing.T) {
 	cases := []struct {
 		Param          *parameters.Parameters
@@ -51,7 +52,7 @@ func TestSphincsPlus(t *testing.T) {
 	}
 }
 
-// Tests that signed messages can be verified with the correct signature
+// Tests that signed messages can be verified with the correct signature, i.e. checks for consistency.
 func testSignAndVerify(t *testing.T, params *parameters.Parameters) {
 	for i := 0; i < 1; i++ {
 		message := make([]byte, params.N)

@@ -12,6 +12,7 @@ import (
 	"github.com/kasperdi/SPHINCSPLUS-golang/parameters"
 )
 
+// Runs the subtests below for all 24 variants.
 func TestSphincsPlus(t *testing.T) {
 	cases := []struct {
 		Param          *parameters.Parameters
@@ -54,6 +55,7 @@ func TestSphincsPlus(t *testing.T) {
 	}
 }
 
+// Uses signatures generated using the reference C FORS implementation to ensure that this implementation returns the same signature.
 func testSignFixed(t *testing.T, params *parameters.Parameters, SphincsVariant string) {
 	bytes, err := ioutil.ReadFile("expected_signatures/expected-fors-" + SphincsVariant + ".txt")
 	if err != nil {
@@ -83,7 +85,7 @@ func testSignFixed(t *testing.T, params *parameters.Parameters, SphincsVariant s
 	}
 }
 
-// Tests that signed messages can be verified with the correct signature
+// Tests that signed messages can be verified with the correct signature, i.e. checks for consistency.
 func testSignAndVerify(t *testing.T, params *parameters.Parameters) {
 	message := make([]byte, 64)
 	rand.Read(message)

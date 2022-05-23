@@ -8,6 +8,7 @@ import (
 	"github.com/kasperdi/SPHINCSPLUS-golang/parameters"
 )
 
+// Runs the testSignAndVerify subtest for all 24 implemented Hypertree variants.
 func TestSphincsPlus(t *testing.T) {
 	cases := []struct {
 		Param          *parameters.Parameters
@@ -49,7 +50,7 @@ func TestSphincsPlus(t *testing.T) {
 	}
 }
 
-// Tests that signed messages can be verified with the correct signature
+// Tests that signed messages can be verified with the correct signature, i.e. checks for consistency.
 func testSignAndVerify(t *testing.T, params *parameters.Parameters) {
 	message := make([]byte, 32)
 	rand.Read(message)
