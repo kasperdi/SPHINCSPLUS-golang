@@ -10,12 +10,12 @@ import (
 )
 
 type XMSSSignature struct {
-	wotsSignature []byte
+	WotsSignature []byte
 	AUTH          []byte
 }
 
 func (s *XMSSSignature) GetWOTSSig() []byte {
-	return s.wotsSignature
+	return s.WotsSignature
 }
 
 func (s *XMSSSignature) GetXMSSAUTH() []byte {
