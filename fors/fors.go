@@ -25,13 +25,6 @@ func (s *FORSSignature) GetAUTH(index int) []byte {
 	return s.Forspkauth[index].AUTH
 }
 
-/* func Fors_SKgen(params *parameters.Parameters, SKseed []byte, adrs *address.ADRS, idx int) []byte {
-	adrs.SetTreeHeight(0)
-	adrs.SetTreeIndex(idx)
-	sk := params.Tweak.PRF(SKseed, adrs)
-	return sk
-} */
-
 func Fors_treehash(params *parameters.Parameters, SKseed []byte, startIndex int, targetNodeHeight int, PKseed []byte, adrs *address.ADRS) []byte {
 	if startIndex%(1<<targetNodeHeight) != 0 {
 		return nil
@@ -96,7 +89,6 @@ func Fors_sign(params *parameters.Parameters, M []byte, SKseed []byte, PKseed []
 
 	for i := 0; i < params.K; i++ {
 		// get next index
-		// unsigned int idx = bits i*log(t) to (i+1)*log(t) - 1 of M;
 		indices := message_to_indices(M, params.K, params.A)
 
 		// pick private key element

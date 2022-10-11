@@ -28,7 +28,7 @@ func chain(params *parameters.Parameters, X []byte, startIndex int, steps int, P
 
 // WOTS+ public key generation
 func Wots_PKgen(params *parameters.Parameters, SKseed []byte, PKseed []byte, adrs *address.ADRS) []byte {
-	//wotspkADRS := adrs // Make a copy of adrs
+	// Make a copy of adrs
 	wotspkADRS := adrs.Copy()
 
 	tmp := make([]byte, params.Len*params.N)
@@ -81,7 +81,7 @@ func Wots_sign(params *parameters.Parameters, message []byte, SKseed []byte, PKs
 func Wots_pkFromSig(params *parameters.Parameters, signature []byte, message []byte, PKseed []byte, adrs *address.ADRS) []byte {
 	csum := 0
 
-	//wotspkADRS := adrs // Make a copy of adrs
+	// Make a copy of adrs
 	wotspkADRS := adrs.Copy()
 
 	// convert message to base w

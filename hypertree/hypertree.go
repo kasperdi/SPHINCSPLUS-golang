@@ -37,9 +37,9 @@ func Ht_sign(params *parameters.Parameters, M []byte, SKseed []byte, PKseed []by
 	SIG_HT = append(SIG_HT, SIG_tmp)
 	root := xmss.Xmss_pkFromSig(params, idx_leaf, SIG_tmp, M, PKseed, adrs)
 	for j := 1; j < params.D; j++ {
-		// idx_leaf = (h / d) least significant bits of idx_tree;
+		// Set idx_leaf to be the (h / d) least significant bits of idx_tree
 		idx_leaf = int(idx_tree % (1 << uint64(params.H/params.D)))
-		// idx_tree = (h - (j + 1) * (h / d)) most significant bits of idx_tree;
+		// Set idx_tree to be the (h - (j + 1) * (h / d)) most significant bits of idx_tree
 		idx_tree = idx_tree >> (params.H / params.D)
 		adrs.SetLayerAddress(j)
 		adrs.SetTreeAddress(idx_tree)
