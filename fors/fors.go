@@ -129,7 +129,7 @@ func Fors_pkFromSig(params *parameters.Parameters, SIG_FORS *FORSSignature, M []
 		adrs.SetTreeIndex(i*params.T + indices[i])
 
 		node0 := params.Tweak.F(PKseed, adrs, sk)
-		node1 := make([]byte, 0)
+		var node1 []byte
 
 		// compute root from leaf and AUTH
 		auth := SIG_FORS.GetAUTH(i)

@@ -74,7 +74,7 @@ func Xmss_pkFromSig(params *parameters.Parameters, idx int, SIG_XMSS *XMSSSignat
 	AUTH := SIG_XMSS.GetXMSSAUTH()
 
 	node0 := wots.Wots_pkFromSig(params, sig, M, PKseed, adrs)
-	node1 := make([]byte, 0)
+	var node1 []byte
 
 	// compute root from WOTS+ pk and AUTH
 	adrs.SetType(address.TREE)

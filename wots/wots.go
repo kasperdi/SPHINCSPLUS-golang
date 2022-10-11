@@ -42,8 +42,7 @@ func Wots_PKgen(params *parameters.Parameters, SKseed []byte, PKseed []byte, adr
 	wotspkADRS.SetType(address.WOTS_PK)
 	wotspkADRS.SetKeyPairAddress(adrs.GetKeyPairAddress())
 
-	pk := make([]byte, params.Len*params.N)
-	pk = params.Tweak.T_l(PKseed, wotspkADRS, tmp)
+	pk := params.Tweak.T_l(PKseed, wotspkADRS, tmp)
 	return pk
 }
 
