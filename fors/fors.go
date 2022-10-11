@@ -13,12 +13,12 @@ type FORSSignature struct {
 }
 
 type TreePKAUTH struct {
-	privateKeyValue []byte
+	PrivateKeyValue []byte
 	AUTH            []byte
 }
 
 func (s *FORSSignature) GetSK(index int) []byte {
-	return s.Forspkauth[index].privateKeyValue
+	return s.Forspkauth[index].PrivateKeyValue
 }
 
 func (s *FORSSignature) GetAUTH(index int) []byte {
