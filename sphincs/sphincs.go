@@ -120,6 +120,7 @@ func Spx_verify(params *parameters.Parameters, M []byte, SIG *SPHINCS_SIG, PK *S
 
 	// compute message digest and index
 	digest := params.Tweak.Hmsg(R, PK.PKseed, PK.PKroot, M)
+
 	tmp_md_bytes := int(math.Floor(float64(params.K*params.A+7) / 8))
 	tmp_idx_tree_bytes := int(math.Floor(float64(params.H-params.H/params.D+7) / 8))
 	tmp_idx_leaf_bytes := int(math.Floor(float64(params.H/params.D+7)) / 8)
@@ -137,9 +138,18 @@ func Spx_verify(params *parameters.Parameters, M []byte, SIG *SPHINCS_SIG, PK *S
 	adrs.SetType(address.FORS_TREE)
 	adrs.SetKeyPairAddress(idx_leaf)
 
-	PK_FORS := fors.Fors_pkFromSig(params, SIG_FORS, tmp_md, PK.PKseed, adrs)
+	// This ensures that we avoid side effects modifying PK
+	PKseed := make([]byte, params.N)
+	copy(PKseed, PK.PKseed)
+
+	PK_FORS := fors.Fors_pkFromSig(params, SIG_FORS, tmp_md, PKseed, adrs)
 
 	// verify HT signature
 	adrs.SetType(address.TREE)
-	return hypertree.Ht_verify(params, PK_FORS, SIG_HT, PK.PKseed, idx_tree, idx_leaf, PK.PKroot)
+
+	// This ensures that we avoid side effects modifying PK
+	PKroot := make([]byte, params.N)
+	copy(PKroot, PK.PKroot)
+
+	return hypertree.Ht_verify(params, PK_FORS, SIG_HT, PKseed, idx_tree, idx_leaf, PKroot)
 }
