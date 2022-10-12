@@ -5,7 +5,6 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io/ioutil"
-	"reflect"
 	"testing"
 
 	"github.com/kasperdi/SPHINCSPLUS-golang/hypertree"
@@ -123,36 +122,6 @@ func TestSignAndVerifyNondeterministic(t *testing.T) {
 		t.Errorf("Verification failed, but was expected to succeed")
 	}
 
-}
-
-func TestSerializeDeserialize(t *testing.T) {
-	params := parameters.MakeSphincsPlusSHA256256fRobust(true)
-	message := make([]byte, params.N)
-	rand.Read(message)
-
-	sk, pk := Spx_keygen(params)
-	signature := Spx_sign(params, message, sk)
-
-	// Check serialization of signature
-	serialized_sig, _ := signature.SerializeSignature()
-	deserialized_sig, _ := DeserializeSignature(params, serialized_sig)
-	if !reflect.DeepEqual(signature, deserialized_sig) {
-		t.Errorf("Serialization of signature failed")
-	}
-
-	// Check serialization of PK
-	serialized_pk, _ := pk.SerializePK()
-	deserialized_pk, _ := DeserializePK(params, serialized_pk)
-	if !reflect.DeepEqual(pk, deserialized_pk) {
-		t.Errorf("Serialization of public key failed")
-	}
-
-	// Check serialization of SK
-	serialized_sk, _ := sk.SerializeSK()
-	deserialized_sk, _ := DeserializeSK(params, serialized_sk)
-	if !reflect.DeepEqual(sk, deserialized_sk) {
-		t.Errorf("Serialization of secret key failed")
-	}
 }
 
 // ------- BENCHMARKING -------

@@ -100,13 +100,19 @@ func Spx_sign(params *parameters.Parameters, M []byte, SK *SPHINCS_SK) *SPHINCS_
 	adrs.SetType(address.FORS_TREE)
 	adrs.SetKeyPairAddress(idx_leaf)
 
-	SIG.SIG_FORS = fors.Fors_sign(params, tmp_md, SK.SKseed, SK.PKseed, adrs)
+	// This ensures that we avoid side effects modifying PK
+	SKseed := make([]byte, params.N)
+	copy(SKseed, SK.SKseed)
+	PKseed := make([]byte, params.N)
+	copy(PKseed, SK.PKseed)
 
-	PK_FORS := fors.Fors_pkFromSig(params, SIG.SIG_FORS, tmp_md, SK.PKseed, adrs)
+	SIG.SIG_FORS = fors.Fors_sign(params, tmp_md, SKseed, PKseed, adrs)
+
+	PK_FORS := fors.Fors_pkFromSig(params, SIG.SIG_FORS, tmp_md, PKseed, adrs)
 
 	// sign FORS public key with HT
 	adrs.SetType(address.TREE)
-	SIG.SIG_HT = hypertree.Ht_sign(params, PK_FORS, SK.SKseed, SK.PKseed, idx_tree, idx_leaf)
+	SIG.SIG_HT = hypertree.Ht_sign(params, PK_FORS, SKseed, PKseed, idx_tree, idx_leaf)
 
 	return SIG
 }
@@ -141,15 +147,13 @@ func Spx_verify(params *parameters.Parameters, M []byte, SIG *SPHINCS_SIG, PK *S
 	// This ensures that we avoid side effects modifying PK
 	PKseed := make([]byte, params.N)
 	copy(PKseed, PK.PKseed)
+	PKroot := make([]byte, params.N)
+	copy(PKroot, PK.PKroot)
 
 	PK_FORS := fors.Fors_pkFromSig(params, SIG_FORS, tmp_md, PKseed, adrs)
 
 	// verify HT signature
 	adrs.SetType(address.TREE)
-
-	// This ensures that we avoid side effects modifying PK
-	PKroot := make([]byte, params.N)
-	copy(PKroot, PK.PKroot)
 
 	return hypertree.Ht_verify(params, PK_FORS, SIG_HT, PKseed, idx_tree, idx_leaf, PKroot)
 }
