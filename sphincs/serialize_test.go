@@ -5,9 +5,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/stretchr/testify/require"
-
 	"github.com/kasperdi/SPHINCSPLUS-golang/parameters"
+	"github.com/stretchr/testify/require"
 )
 
 func TestSerializeDeserialize(t *testing.T) {
@@ -48,30 +47,45 @@ func TestSphincsPlusSerialization(t *testing.T) {
 
 	sig1 := Spx_sign(params, message, privKey1)
 	sigBytes1, err := sig1.SerializeSignature()
-	require.NoError(t, err)
+	noError(t, err)
 
 	sig2, err := DeserializeSignature(params, sigBytes1)
-	require.NoError(t, err)
+	noError(t, err)
 	sigBytes2, err := sig2.SerializeSignature()
-	require.NoError(t, err)
+	noError(t, err)
+	if !reflect.DeepEqual(sigBytes1, sigBytes2) {
+		t.Errorf("Signatures do not match!")
+	}
 	require.Equal(t, sigBytes1, sigBytes2)
 
 	privKeyBytes1, err := privKey1.SerializeSK()
-	require.NoError(t, err)
+	noError(t, err)
 	privKey2, err := DeserializeSK(params, privKeyBytes1)
-	require.NoError(t, err)
+	noError(t, err)
 	sig3 := Spx_sign(params, message, privKey2)
 
-	require.True(t, Spx_verify(params, message, sig1, pubKey1))
-	require.True(t, Spx_verify(params, message, sig2, pubKey1))
-	require.True(t, Spx_verify(params, message, sig3, pubKey1))
+	verificationShouldPass(t, Spx_verify(params, message, sig1, pubKey1))
+	verificationShouldPass(t, Spx_verify(params, message, sig2, pubKey1))
+	verificationShouldPass(t, Spx_verify(params, message, sig3, pubKey1))
 
 	pubKeyBytes1, err := pubKey1.SerializePK()
-	require.NoError(t, err)
+	noError(t, err)
 	pubKey2, err := DeserializePK(params, pubKeyBytes1)
-	require.NoError(t, err)
+	noError(t, err)
 
-	require.True(t, Spx_verify(params, message, sig1, pubKey2))
-	require.True(t, Spx_verify(params, message, sig2, pubKey2))
-	require.True(t, Spx_verify(params, message, sig3, pubKey2))
+	verificationShouldPass(t, Spx_verify(params, message, sig1, pubKey2))
+	verificationShouldPass(t, Spx_verify(params, message, sig2, pubKey2))
+	verificationShouldPass(t, Spx_verify(params, message, sig3, pubKey2))
+}
+
+func noError(t *testing.T, err error) {
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+}
+
+func verificationShouldPass(t *testing.T, pass bool) {
+	if !pass {
+		t.Errorf("Verification of signature failed")
+	}
 }
