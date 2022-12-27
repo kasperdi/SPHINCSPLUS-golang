@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/kasperdi/SPHINCSPLUS-golang/parameters"
-	"github.com/stretchr/testify/require"
 )
 
 func TestSerializeDeserialize(t *testing.T) {
@@ -56,7 +55,6 @@ func TestSphincsPlusSerialization(t *testing.T) {
 	if !reflect.DeepEqual(sigBytes1, sigBytes2) {
 		t.Errorf("Signatures do not match!")
 	}
-	require.Equal(t, sigBytes1, sigBytes2)
 
 	privKeyBytes1, err := privKey1.SerializeSK()
 	noError(t, err)
