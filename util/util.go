@@ -31,15 +31,6 @@ func BytesToUint32(in []byte) uint32 {
 	return res
 }
 
-// Returns a XOR b, where a and b has to have same length
-func XorBytes(a []byte, b []byte) []byte {
-	res := make([]byte, len(a))
-	for i, elem := range a {
-		res[i] = elem ^ b[i]
-	}
-	return res
-}
-
 func Base_w(X []byte, w int, out_len int) []int {
 	in := 0
 	out := 0

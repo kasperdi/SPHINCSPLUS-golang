@@ -1,8 +1,9 @@
 package tweakable
 
 import (
+	"crypto/subtle"
+
 	"github.com/kasperdi/SPHINCSPLUS-golang/address"
-	"github.com/kasperdi/SPHINCSPLUS-golang/util"
 	"golang.org/x/crypto/sha3"
 )
 
@@ -51,7 +52,8 @@ func (h *Shake256Tweak) F(PKseed []byte, adrs *address.ADRS, tmp []byte) []byte 
 
 	if h.Variant == Robust {
 		bitmask := generateBitmask(PKseed, adrs, 8*len(tmp))
-		M1 = util.XorBytes(tmp, bitmask)
+		M1 = make([]byte, len(tmp))
+		_ = subtle.XORBytes(M1, tmp, bitmask)
 	} else if h.Variant == Simple {
 		M1 = tmp
 	}
